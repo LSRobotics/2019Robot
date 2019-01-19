@@ -35,7 +35,7 @@ public class Gamepad {
     public static int DPAD_State = -1;
 
     //methods
-    public void putNaturalState() {
+    public void putButtonStates() {
         putGamepadButtonStates();
         putGamepadAxisStates();
         putGamepadDPADState();
