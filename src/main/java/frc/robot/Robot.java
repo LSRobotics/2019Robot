@@ -124,6 +124,10 @@ public class Robot extends TimedRobot {
     updateButtonStates();
     updateSpeedLimit(Gamepad.Right_Bumper_State, Gamepad.Left_Bumper_State, Gamepad.B_Button_State);
     updateDrive(Gamepad.Left_Trigger_Axis_State, Gamepad.Right_Trigger_Axis_State, Gamepad.Left_Stick_Y_Axis_State, Gamepad.Right_Stick_Y_Axis_State);
+    SmartDashboard.putNumber("Controller Left Trigger Axis State", Gamepad.Left_Trigger_Axis_State);
+    SmartDashboard.putNumber("Controller Right Trigger Axis State", Gamepad.Right_Trigger_Axis_State);
+    SmartDashboard.putNumber("Controller Left Stick Axis State", Gamepad.Left_Stick_Y_Axis_State);
+    SmartDashboard.putNumber("Controller Right Stick Axis State", Gamepad.Right_Stick_Y_Axis_State);
   }
 
   /**
@@ -148,7 +152,7 @@ public class Robot extends TimedRobot {
   }
 
   private static void initializeSpeedLimit() {
-    mSpeedLimit = .1;
+    mSpeedLimit = 1;
   }
 
   private static void updateSpeedLimit(boolean increaseSpeedButtonState, boolean decreaseSpeedButtonState, boolean stopButtonState) {
@@ -157,12 +161,12 @@ public class Robot extends TimedRobot {
     }
 
     if(increaseSpeedButtonState && !decreaseSpeedButtonState) {
-      mSpeedLimit = Math.max(mSpeedLimit + .1, 0);
+      mSpeedLimit = Math.min(mSpeedLimit + .1, 1);
     }
     if(!increaseSpeedButtonState && decreaseSpeedButtonState) {
       mSpeedLimit = Math.max(mSpeedLimit - .1, 0);
     }
-    SmartDashboard.putString("Speed Limit", mDecimalFormat.format(mSpeedLimit));
+    SmartDashboard.putNumber("Speed Limit", mSpeedLimit);
   }
 
   private static void initializeDifferentialDrive() {
@@ -182,7 +186,7 @@ public class Robot extends TimedRobot {
 
   //else contains true tank drive
   public void updateDrive(double leftTriggerAxisState, double rightTriggerAxisState, double leftStickYAxisState, double rightStickYAxisState) {
-    if(Math.abs(leftStickYAxisState) < .1 && Math.abs(rightStickYAxisState) < .1) { //TODO mess with the stick values to figure out when Sticks are not being used. 
+    if(Math.abs(leftStickYAxisState) < .1 && Math.abs(rightStickYAxisState) < .1) {
       mLeftSpeed = leftTriggerAxisState * leftTriggerAxisState; //squared
       mRightSpeed = rightTriggerAxisState * rightTriggerAxisState; //squared
 
@@ -203,7 +207,24 @@ public class Robot extends TimedRobot {
       mLeftSpeed = leftStickYAxisState * Math.abs(leftStickYAxisState);
       mRightSpeed = rightStickYAxisState * Math.abs(rightStickYAxisState);
 
-      mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
+      if(Math.abs(mLeftSpeed) > mSpeedLimit) {
+        if(mLeftSpeed < 0) {
+          mLeftSpeed = -mSpeedLimit;
+        }
+        else {
+          mLeftSpeed = mSpeedLimit;
+        }
+      }
+      if(Math.abs(mRightSpeed) > mSpeedLimit) {
+        if(mRightSpeed < 0) {
+          mRightSpeed = -mSpeedLimit;
+        }
+        else {
+          mRightSpeed = mSpeedLimit;
+        }
+      }
+
+      mDifferentialDrive.tankDrive(-mLeftSpeed, -mRightSpeed);
     }
   }
 
