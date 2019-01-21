@@ -47,7 +47,11 @@ public class Robot extends TimedRobot {
   public static double mLeftSpeed;
   public static double mRightSpeed;
 
+  public static double RobotTurnDegree;
+
   public static DecimalFormat mDecimalFormat;
+
+  public static GyroSensor mGyroSensor;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -64,6 +68,7 @@ public class Robot extends TimedRobot {
     initializeSpeedLimit();
     initializeDifferentialDrive();
     initializeTankDrive();
+    initializeGyroSensor();
     
     mDecimalFormat = (DecimalFormat) DecimalFormat.getNumberInstance();
     mDecimalFormat.applyPattern("0.##");
@@ -128,6 +133,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Controller Right Trigger Axis State", Gamepad.Right_Trigger_Axis_State);
     SmartDashboard.putNumber("Controller Left Stick Axis State", Gamepad.Left_Stick_Y_Axis_State);
     SmartDashboard.putNumber("Controller Right Stick Axis State", Gamepad.Right_Stick_Y_Axis_State);
+    updateRobotTurn(Gamepad.DPAD_State);
   }
 
   /**
@@ -153,6 +159,10 @@ public class Robot extends TimedRobot {
 
   private static void initializeSpeedLimit() {
     mSpeedLimit = 1;
+  }
+
+  private static void initializeGyroSensor() {
+    mGyroSensor.initializeGyroSensor();
   }
 
   private static void updateSpeedLimit(boolean increaseSpeedButtonState, boolean decreaseSpeedButtonState, boolean stopButtonState) {
@@ -225,6 +235,25 @@ public class Robot extends TimedRobot {
       }
 
       mDifferentialDrive.tankDrive(-mLeftSpeed, -mRightSpeed);
+    }
+  }
+
+  public void updateRobotTurn(Double DPADDegree) {
+    if(DPADDegree != -1) {
+      double angle = (DPADDegree - mGyroSensor.getAngle());
+      if(angle < 0) {
+        angle += 360;
+      }
+      if(angle <= 180) {
+        while(mGyroSensor.getAngle() != DPADDegree) {
+          mDifferentialDrive.tankDrive(1, -1);
+        }
+      }
+      else {
+        while(mGyroSensor.getAngle() != DPADDegree) {
+          mDifferentialDrive.tankDrive(-1, 1);
+        }
+      }
     }
   }
 
