@@ -31,7 +31,7 @@ public class Gamepad {
     public static double Right_Trigger_Axis_State = 0;
 
     //State of the DPAD to be called in the robot class to be used as needed
-    public static int DPAD_State = -1;
+    public static double DPAD_State = -1;
 
     //methods
     public void putButtonStates() {
