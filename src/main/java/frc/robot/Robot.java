@@ -1,206 +1,264 @@
+/*----------------------------------------------------------------------------*/
+/* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */
+/* Open Source Software - may be modified and shared by FRC teams. The code   */
+/* must be accompanied by the FIRST BSD license file in the root directory of */
+/* the project.                                                               */
+/*----------------------------------------------------------------------------*/
+
 package frc.robot;
 
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
-import frc.robot.hardware.*;
-import frc.robot.software.*;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.VictorSP;
+import edu.wpi.first.wpilibj.SpeedControllerGroup;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+
+import java.text.DecimalFormat;
 
 /**
- * Hi Nick,
- * 		I would highly recommend you to look up something called "MVC" project structure, which is probably important to collaboration. 
- *		And for static classes, it would be great if you strictly follows whatever that's on APCS class.
- *		I'm sorry that your code has been reworked, but I will make sure that it works on the Robot without Blood & Tears.
- *     
- * 	    -- Pat Liao
+ * The VM is configured to automatically run 0this class, and to call the
+ * functions corresponding to each mode, as described in the TimedRobot
+ * documentation. If you change the name of this class or the package after
+ * creating this project, you must also update the build.gradle file in the
+ * project.
  */
+public class Robot extends TimedRobot {
+  private static final String kDefaultAuto = "Default";
+  private static final String kCustomAuto = "My Auto";
+  private String m_autoSelected;
+  private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-final public class Robot extends TimedRobot {
+  public static Gamepad mGamepad;
+  
+  public static VictorSP mFrontLeft;
+  public static VictorSP mMiddleLeft;
+  public static VictorSP mRearLeft;
+  public static VictorSP mFrontRight;
+  public static VictorSP mMiddleRight;
+  public static VictorSP mRearRight;
 
-	private static double speedFactor = 1.0;
-	private static boolean requireUpdate = false;
-	private static boolean isSNP = false; // Means "is Sniping Mode Triggered"
-	private static XboxGp gp1;
-	private static XboxGp gp2;
-	private static Camera pixyCam;
-	private static Timer camTimer;
-	private static UltrasonicSensor ultrasonicA;
+  public static SpeedControllerGroup mLeftSpeedControllers;
+  public static SpeedControllerGroup mRightSpeedControllers;
 
-	private int speedSwitch = 0;
+  public static DifferentialDrive mDifferentialDrive;
 
-	/**
-	 * This function is run when the robot is first started up and should be used
-	 * for any initialization code.
-	 */
-	@Override
-	public void robotInit() {
+  public static double mSpeedLimit;
+  public static double mLeftSpeed;
+  public static double mRightSpeed;
 
-		// Hardware
-		DriveTrain.init(Statics.DRIVE_FL, Statics.DRIVE_RL, Statics.DRIVE_FR, Statics.DRIVE_RR);
+  public static double mRobotTurnDegree;
 
-		gp1 = new XboxGp(Statics.XBOX_CTRL1);
-		gp2 = new XboxGp(Statics.XBOX_CTRL2);
+  public static DecimalFormat mDecimalFormat;
 
-		pixyCam = new Camera();
+  public static GyroSensor mGyroSensor;
 
-		pixyCam.setScreenRatio(640 / 400);
-		pixyCam.setResolution(400 / 2);
+  /**
+   * This function is run when the robot is first started up and should be
+   * used for any initialization code.
+   */
+  @Override
+  public void robotInit() {
+    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
+    m_chooser.addOption("My Auto", kCustomAuto);
+    SmartDashboard.putData("Auto choices", m_chooser);
 
-		if (Statics.DEBUG_MODE) {
-			DriverStation.reportWarning("DEBUG", false);
-			RobotUtil.isOutputEnabled = true;
+    initializeGamepad();
+    initializeMotorControllers();
+    initializeSpeedLimit();
+    initializeDifferentialDrive();
+    initializeTankDrive();
+    initializeGyroSensor();
+    
+    mDecimalFormat = (DecimalFormat) DecimalFormat.getNumberInstance();
+    mDecimalFormat.applyPattern("0.##");
 
-		}
+  }
 
-		Motor.setMode(Statics.MOTOR_MODE);
-		camTimer = new Timer("Camera FPS Capping Timer");
+  /**
+   * This function is called every robot packet, no matter the mode. Use
+   * this for items like diagnostics that you want ran during disabled,
+   * autonomous, teleoperated and test.
+   *
+   * <p>This runs after the mode specific periodic functions, but before
+   * LiveWindow and SmartDashboard integrated updating.
+   */
+  @Override
+  public void robotPeriodic() {
+  }
 
-		ultrasonicA = new UltrasonicSensor(Statics.ULTRASONIC_PING_PORT_1, Statics.ULTRASONIC_ECHO_PORT_1);
+  /**
+   * This autonomous (along with the chooser code above) shows how to select
+   * between different autonomous modes using the dashboard. The sendable
+   * chooser code works with the Java SmartDashboard. If you prefer the
+   * LabVIEW Dashboard, remove all of the chooser code and uncomment the
+   * getString line to get the auto name from the text box below the Gyro
+   *
+   * <p>You can add additional auto modes by adding additional comparisons to
+   * the switch structure below with additional strings. If using the
+   * SendableChooser make sure to add them to the chooser code above as well.
+   */
+  @Override
+  public void autonomousInit() {
+    m_autoSelected = m_chooser.getSelected();
+    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
+    System.out.println("Auto selected: " + m_autoSelected);
+  }
 
-	}
+  /**
+   * This function is called periodically during autonomous.
+   */
+  @Override
+  public void autonomousPeriodic() {
+    switch (m_autoSelected) {
+      case kCustomAuto:
+        // Put custom auto code here
+        break;
+      case kDefaultAuto:
+      default:
+        // Put default auto code here
+        break;
+    }
+  }
 
-	@Override
-	public void autonomousInit() {
-		pixyCam.setQuickMode(true);
-	}
+  /**
+   * This function is called periodically during operator control.
+   */
+  @Override
+  public void teleopPeriodic() {
+    updateButtonStates();
+    updateRobotTurnDegree(Gamepad.DPAD_State);
+    updateSpeedLimit(Gamepad.Right_Bumper_State, Gamepad.Left_Bumper_State, Gamepad.B_Button_State);
+    updateDrive(Gamepad.Left_Trigger_Axis_State, Gamepad.Right_Trigger_Axis_State, Gamepad.Left_Stick_Y_Axis_State, Gamepad.Right_Stick_Y_Axis_State);
+    SmartDashboard.putNumber("Controller Left Trigger Axis State", Gamepad.Left_Trigger_Axis_State);
+    SmartDashboard.putNumber("Controller Right Trigger Axis State", Gamepad.Right_Trigger_Axis_State);
+    SmartDashboard.putNumber("Controller Left Stick Axis State", Gamepad.Left_Stick_Y_Axis_State);
+    SmartDashboard.putNumber("Controller Right Stick Axis State", Gamepad.Right_Stick_Y_Axis_State);
+    updateRobotTurn(mRobotTurnDegree);
+  }
 
-	@Override
-	public void disabledPeriodic() {
-		pixyCam.setQuickMode(false);
-	}
+  /**
+   * This function is called periodically during test mode.
+   */
+  @Override
+  public void testPeriodic() {
+  }
 
-	/**
-	 * This function is called periodically during autonomous
-	 */
-	@Override
-	public void autonomousPeriodic() {
-		teleopPeriodic();
-	}
+  private static void initializeGamepad() {
+    mGamepad = new Gamepad();
+    mGamepad.putButtonStates();
+  }
 
-	/**
-	 * This function is called periodically during operator control
-	 */
-	@Override
-	public void teleopInit() {
-		pixyCam.setQuickMode(true);
-	}
+  private static void initializeMotorControllers() {
+    mFrontLeft = new VictorSP(Statics.Front_Left_Channel);
+    //mMiddleLeft = new VictorSP(Statics.Middle_Left_Channel);
+    mRearLeft = new VictorSP(Statics.Rear_Left_Channel);
+    mFrontRight = new VictorSP(Statics.Front_Right_Channel);
+    //mMiddleRight = new VictorSP(Statics.Middle_Right_Channel);
+    mRearRight = new VictorSP(Statics.Rear_Right_Channel);
+  }
 
-	@Override
-	public void teleopPeriodic() {
-		preLoop();
-		gp1.fetchData();
-		gp2.fetchData();
-		speedControl();
-		driveControl();
-		requireUpdate = false;
-		postLoop();
-		postSensorData();
-	}
+  private static void initializeSpeedLimit() {
+    mSpeedLimit = 1;
+  }
 
-	@Override
-	public void testInit() {
-		RobotUtil.isOutputEnabled = true;
-	}
+  private static void initializeGyroSensor() {
+    mGyroSensor.initializeGyroSensor();
+  }
 
-	/**
-	 * This function is called periodically during test mode
-	 */
-	@Override
-	public void testPeriodic() {
-		preLoop();
-		gp1.fetchData();
-		gp2.fetchData();
-		speedControl();
-		driveControl();
-		if (Statics.DEBUG_MODE) {
-			this.postSensorData();
-		}
-		requireUpdate = false;
-		postLoop();
-	}
+  private static void updateSpeedLimit(boolean increaseSpeedButtonState, boolean decreaseSpeedButtonState, boolean stopButtonState) {
+    if(stopButtonState) {
+      mSpeedLimit = 0;
+    }
 
-	public void speedControl() {
+    if(increaseSpeedButtonState && !decreaseSpeedButtonState) {
+      mSpeedLimit = Math.min(mSpeedLimit + .1, 1);
+    }
+    if(!increaseSpeedButtonState && decreaseSpeedButtonState) {
+      mSpeedLimit = Math.max(mSpeedLimit - .1, 0);
+    }
+    SmartDashboard.putNumber("Speed Limit", mSpeedLimit);
+  }
 
-		final double GEAR_INTERVAL = 0.2;
-		/**
-		 * 6-level global speed control with toggling Y on the gamepad
-		 */
-		if (gp1.isKeyToggled(XboxGp.Key.Y)) {
+  private static void initializeDifferentialDrive() {
+    mLeftSpeedControllers = new SpeedControllerGroup(mFrontLeft, mRearLeft);
+    mRightSpeedControllers = new SpeedControllerGroup(mFrontRight, mRearRight);
 
-			if (speedSwitch > -1 && speedSwitch < 6) {
+    mDifferentialDrive = new DifferentialDrive(mLeftSpeedControllers, mRightSpeedControllers);
+  }
 
-				speedFactor = RobotUtil.clipValue((0.1 + GEAR_INTERVAL * speedSwitch), 0, 1);
-				speedSwitch += 1;
-			} else {
-				speedFactor = 0.1;
-				speedSwitch = 0;
-			}
+  private static void initializeTankDrive() {
+    mDifferentialDrive.tankDrive(mSpeedLimit, mSpeedLimit);
+  }
 
-			DriveTrain.setSpeed(speedFactor);
-			requireUpdate = true;
-		}
-	}
+  public void updateButtonStates() {
+    mGamepad.putButtonStates();
+  }
 
-	public void driveControl() {
-		/**
-		 * Reverse Gear Trigger (Button Y, AKA "Triangle" in Dualshock 4)
-		 */
-		if (gp1.isKeyToggled(XboxGp.Key.LB)) {
-			DriveTrain.flip();
-			requireUpdate = true;
-		}
+  //else contains true tank drive
+  public void updateDrive(double leftTriggerAxisState, double rightTriggerAxisState, double leftStickYAxisState, double rightStickYAxisState) {
+    if(Math.abs(leftStickYAxisState) < .1 && Math.abs(rightStickYAxisState) < .1) {
+      mLeftSpeed = leftTriggerAxisState * leftTriggerAxisState; //squared
+      mRightSpeed = rightTriggerAxisState * rightTriggerAxisState; //squared
 
-		/**
-		 * Sniping Mode (First used in FTC 2017 Relic Recovery as the programming member
-		 * in Team 11319) Use Right Bumper for toggling
-		 */
-		if (gp1.isKeyToggled(XboxGp.Key.RB)) {
-			isSNP = !isSNP;
-			speedFactor = isSNP ? 0.6 : 1.0;
+      if (mLeftSpeed > mRightSpeed) {
+        if (mLeftSpeed > mSpeedLimit) {
+          mLeftSpeed = mSpeedLimit;
+        }
+        mDifferentialDrive.tankDrive(-mLeftSpeed, -mLeftSpeed);
+      }
+      else if (mRightSpeed > mLeftSpeed) {
+        if (mRightSpeed > mSpeedLimit) {
+          mRightSpeed = mSpeedLimit;
+        }
+        mDifferentialDrive.tankDrive(mRightSpeed, mRightSpeed);
+      }
+    }
+    else {
+      mLeftSpeed = leftStickYAxisState * Math.abs(leftStickYAxisState);
+      mRightSpeed = rightStickYAxisState * Math.abs(rightStickYAxisState);
 
-			speedSwitch = isSNP ? 3 : 5;
+      if(Math.abs(mLeftSpeed) > mSpeedLimit) {
+        if(mLeftSpeed < 0) {
+          mLeftSpeed = -mSpeedLimit;
+        }
+        else {
+          mLeftSpeed = mSpeedLimit;
+        }
+      }
+      if(Math.abs(mRightSpeed) > mSpeedLimit) {
+        if(mRightSpeed < 0) {
+          mRightSpeed = -mSpeedLimit;
+        }
+        else {
+          mRightSpeed = mSpeedLimit;
+        }
+      }
 
-			DriveTrain.setSpeed(speedFactor);
-			requireUpdate = true;
-		}
-		/**
-		 * NFS Drive Control (Might improve driving experience + less likely wearing out
-		 * the gearboxes due to rapid speed change)
-		 */
-		else if (gp1.isKeyChanged(XboxGp.Key.RT) || gp1.isKeyChanged(XboxGp.Key.LT)
-				|| gp1.isKeyChanged(XboxGp.Key.J_LEFT_X) || requireUpdate) {
+      mDifferentialDrive.tankDrive(-mLeftSpeed, -mRightSpeed);
+    }
+  }
 
-			DriveTrain.tankDrive(gp1.getValue(XboxGp.Key.J_LEFT_X) * 0.5,
-					(gp1.getValue(XboxGp.Key.RT) - gp1.getValue(XboxGp.Key.LT)));
-		}
+  public void updateRobotTurn(Double robotTurnDegree) {
+    if(robotTurnDegree != mGyroSensor.getAngle()) {
+      double angle = (robotTurnDegree - mGyroSensor.getAngle());
+      if(angle < 0) {
+        angle += 360;
+      }
+      if(angle <= 180) {
+        mDifferentialDrive.tankDrive(1, -1);
+      }
+      else {
+        mDifferentialDrive.tankDrive(-1, 1);
+      }
+    }
+  }
+  
 
-	}
+  public void updateRobotTurnDegree(Double DPADDegree) {
+    if(DPADDegree != -1) {
+      mRobotTurnDegree = DPADDegree;
+    }
+  }
 
-	public void postSensorData() {
-		RobotUtil.report("Ultrasonic sensor reading: " + ultrasonicA.getRange());
-	}
-
-	@Deprecated
-	public void postPDPData() {
-
-	}
-
-	public void preLoop() {
-
-		if (!camTimer.isBusy()) {
-			camTimer.start();
-		}
-
-		if (!pixyCam.isQuickMode()) {
-			pixyCam.setQuickMode(true);
-		}
-
-	}
-
-	public void postLoop() {
-
-		if (camTimer.getElaspedTimeInMs() > 500) {
-			camTimer.stop();
-			pixyCam.updateDynamicRes(20);
-		}
-	}
 }
