@@ -172,10 +172,10 @@ public class Robot extends TimedRobot {
     }
 
     if(increaseSpeedButtonState && !decreaseSpeedButtonState) {
-      mSpeedLimit = Math.min(mSpeedLimit + .1, 1);
+      mSpeedLimit = Math.min(mSpeedLimit + .2, 1);
     }
     if(!increaseSpeedButtonState && decreaseSpeedButtonState) {
-      mSpeedLimit = Math.max(mSpeedLimit - .1, 0);
+      mSpeedLimit = Math.max(mSpeedLimit - .2, 0);
     }
     SmartDashboard.putNumber("Speed Limit", mSpeedLimit);
   }
