@@ -132,17 +132,18 @@ public class Robot extends TimedRobot {
     updateButtonStates();
     updateRobotTurnDegree(Gamepad.DPAD_State);
     if(TargetAngle != -1) {
-      int angle = Math.floorMod((int)(gyroAngle - TargetAngle), 360);
-      SmartDashboard.putNumber("Angle", angle);
-      if(angle <= 5) {
+      int rotateDistance = Math.floorMod((int)(gyroAngle - TargetAngle), 360);
+      SmartDashboard.putNumber("rotate Distance angle", rotateDistance);
+      if(rotateDistance <= 5 || Gamepad.Y_Button_State) {
         TargetAngle = -1;
+        mDifferentialDrive.stopMotor();
       }
       else {
-        if(angle >= 180) {
-          mDifferentialDrive.tankDrive(1, -1); //TODO check max speed and minimum precision needed
+        if(rotateDistance >= 180) {
+          mDifferentialDrive.tankDrive(.4, -.4); //TODO check max speed and minimum precision needed
         }
         else {
-          mDifferentialDrive.tankDrive(-1, 1);
+          mDifferentialDrive.tankDrive(-.4, .4);
         }
       }
     }

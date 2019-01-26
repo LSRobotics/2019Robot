@@ -13,10 +13,10 @@ public class UltrasonicSensor {
     public void initializeUltrasonicSenor() {
         mUltrasonicSensor = new Ultrasonic(mPingChannel, mEchoChannel, Ultrasonic.Unit.kInches);
         mUltrasonicSensor.setEnabled(true);
-        mUltrasonicSensor.setAutomaticMode(true);
+        mUltrasonicSensor.setAutomaticMode(true);  //check this out.
     }
 
-    public double getRange() {
+    public double getRange() { //all of this needs checked.
         if(mUltrasonicSensor.isRangeValid()) {
             return mUltrasonicSensor.getRangeInches();
         }
