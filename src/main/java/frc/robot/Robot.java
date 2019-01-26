@@ -47,7 +47,7 @@ public class Robot extends TimedRobot {
   public static double mLeftSpeed;
   public static double mRightSpeed;
 
-  public static double RobotTurnDegree;
+  public static double mRobotTurnDegree;
 
   public static DecimalFormat mDecimalFormat;
 
@@ -127,13 +127,14 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     updateButtonStates();
+    updateRobotTurnDegree(Gamepad.DPAD_State);
     updateSpeedLimit(Gamepad.Right_Bumper_State, Gamepad.Left_Bumper_State, Gamepad.B_Button_State);
     updateDrive(Gamepad.Left_Trigger_Axis_State, Gamepad.Right_Trigger_Axis_State, Gamepad.Left_Stick_Y_Axis_State, Gamepad.Right_Stick_Y_Axis_State);
     SmartDashboard.putNumber("Controller Left Trigger Axis State", Gamepad.Left_Trigger_Axis_State);
     SmartDashboard.putNumber("Controller Right Trigger Axis State", Gamepad.Right_Trigger_Axis_State);
     SmartDashboard.putNumber("Controller Left Stick Axis State", Gamepad.Left_Stick_Y_Axis_State);
     SmartDashboard.putNumber("Controller Right Stick Axis State", Gamepad.Right_Stick_Y_Axis_State);
-    updateRobotTurn(Gamepad.DPAD_State);
+    updateRobotTurn(mRobotTurnDegree);
   }
 
   /**
@@ -238,22 +239,25 @@ public class Robot extends TimedRobot {
     }
   }
 
-  public void updateRobotTurn(Double DPADDegree) {
-    if(DPADDegree != -1) {
-      double angle = (DPADDegree - mGyroSensor.getAngle());
+  public void updateRobotTurn(Double robotTurnDegree) {
+    if(robotTurnDegree != mGyroSensor.getAngle()) {
+      double angle = (robotTurnDegree - mGyroSensor.getAngle());
       if(angle < 0) {
         angle += 360;
       }
       if(angle <= 180) {
-        while(mGyroSensor.getAngle() != DPADDegree) {
-          mDifferentialDrive.tankDrive(1, -1);
-        }
+        mDifferentialDrive.tankDrive(1, -1);
       }
       else {
-        while(mGyroSensor.getAngle() != DPADDegree) {
-          mDifferentialDrive.tankDrive(-1, 1);
-        }
+        mDifferentialDrive.tankDrive(-1, 1);
       }
+    }
+  }
+  
+
+  public void updateRobotTurnDegree(Double DPADDegree) {
+    if(DPADDegree != -1) {
+      mRobotTurnDegree = DPADDegree;
     }
   }
 
