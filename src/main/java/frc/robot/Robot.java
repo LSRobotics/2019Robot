@@ -47,11 +47,13 @@ public class Robot extends TimedRobot {
   public static double mLeftSpeed;
   public static double mRightSpeed;
 
-  public static double mRobotTurnDegree;
+  public static double TargetAngle;
 
   public static DecimalFormat mDecimalFormat;
 
   public static GyroSensor mGyroSensor;
+
+  public static double gyroAngle;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -126,15 +128,29 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
+    updateSensors();
     updateButtonStates();
     updateRobotTurnDegree(Gamepad.DPAD_State);
-    updateSpeedLimit(Gamepad.Right_Bumper_State, Gamepad.Left_Bumper_State, Gamepad.B_Button_State);
-    updateDrive(Gamepad.Left_Trigger_Axis_State, Gamepad.Right_Trigger_Axis_State, Gamepad.Left_Stick_Y_Axis_State, Gamepad.Right_Stick_Y_Axis_State);
-    SmartDashboard.putNumber("Controller Left Trigger Axis State", Gamepad.Left_Trigger_Axis_State);
-    SmartDashboard.putNumber("Controller Right Trigger Axis State", Gamepad.Right_Trigger_Axis_State);
-    SmartDashboard.putNumber("Controller Left Stick Axis State", Gamepad.Left_Stick_Y_Axis_State);
-    SmartDashboard.putNumber("Controller Right Stick Axis State", Gamepad.Right_Stick_Y_Axis_State);
-    updateRobotTurn(mRobotTurnDegree);
+    if(TargetAngle != -1) {
+      int angle = Math.floorMod((int)(gyroAngle - TargetAngle), 360);
+      SmartDashboard.putNumber("Angle", angle);
+      if(angle <= 5) {
+        TargetAngle = -1;
+      }
+      else {
+        if(angle >= 180) {
+          mDifferentialDrive.tankDrive(1, -1); //TODO check max speed and minimum precision needed
+        }
+        else {
+          mDifferentialDrive.tankDrive(-1, 1);
+        }
+      }
+    }
+    else {
+      updateSpeedLimit(Gamepad.Right_Bumper_State, Gamepad.Left_Bumper_State, Gamepad.B_Button_State);
+      updateDrive(Gamepad.Left_Trigger_Axis_State, Gamepad.Right_Trigger_Axis_State, Gamepad.Left_Stick_Y_Axis_State, Gamepad.Right_Stick_Y_Axis_State);
+    }
+    updateSmartDashboard();
   }
 
   /**
@@ -142,6 +158,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void testPeriodic() {
+
   }
 
   private static void initializeGamepad() {
@@ -163,6 +180,7 @@ public class Robot extends TimedRobot {
   }
 
   private static void initializeGyroSensor() {
+    mGyroSensor = new GyroSensor();
     mGyroSensor.initializeGyroSensor();
   }
 
@@ -193,6 +211,10 @@ public class Robot extends TimedRobot {
 
   public void updateButtonStates() {
     mGamepad.putButtonStates();
+  }
+
+  public void updateSensors() {
+    gyroAngle = mGyroSensor.getAngle();
   }
 
   //else contains true tank drive
@@ -239,26 +261,19 @@ public class Robot extends TimedRobot {
     }
   }
 
-  public void updateRobotTurn(Double robotTurnDegree) {
-    if(robotTurnDegree != mGyroSensor.getAngle()) {
-      double angle = (robotTurnDegree - mGyroSensor.getAngle());
-      if(angle < 0) {
-        angle += 360;
-      }
-      if(angle <= 180) {
-        mDifferentialDrive.tankDrive(1, -1);
-      }
-      else {
-        mDifferentialDrive.tankDrive(-1, 1);
+    public void updateRobotTurnDegree(Double DPADDegree) {
+      if(DPADDegree != -1) {
+        TargetAngle = DPADDegree;
       }
     }
-  }
-  
 
-  public void updateRobotTurnDegree(Double DPADDegree) {
-    if(DPADDegree != -1) {
-      mRobotTurnDegree = DPADDegree;
+    public void updateSmartDashboard() {
+    SmartDashboard.putNumber("Controller Left Trigger Axis State", Gamepad.Left_Trigger_Axis_State);
+    SmartDashboard.putNumber("Controller Right Trigger Axis State", Gamepad.Right_Trigger_Axis_State);
+    SmartDashboard.putNumber("Controller Left Stick Axis State", Gamepad.Left_Stick_Y_Axis_State);
+    SmartDashboard.putNumber("Controller Right Stick Axis State", Gamepad.Right_Stick_Y_Axis_State);
+    SmartDashboard.putNumber("Robot Turn Degree", TargetAngle);
+    SmartDashboard.putNumber("Gyro Angle", gyroAngle);
     }
-  }
 
 }

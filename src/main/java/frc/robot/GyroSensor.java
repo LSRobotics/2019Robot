@@ -1,19 +1,19 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj.AnalogGyro;
+import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import edu.wpi.first.wpilibj.SPI;
 
 public class GyroSensor {
-
-    public static int mGyroPortNumber; //TODO map channel number
-
-    public static AnalogGyro mGyroSensor = new AnalogGyro(mGyroPortNumber);
+    
+    public static ADXRS450_Gyro GyroSensor;
 
     public void initializeGyroSensor() {
-        mGyroSensor.initGyro();
-        mGyroSensor.calibrate();
+        GyroSensor = new ADXRS450_Gyro(SPI.Port.kOnboardCS0);
+        GyroSensor.reset();
+        GyroSensor.calibrate();
     }
 
     public double getAngle() {
-        return mGyroSensor.getAngle();
+        return GyroSensor.getAngle();
     }
 }
