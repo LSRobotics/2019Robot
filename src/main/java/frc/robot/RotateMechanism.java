@@ -1,9 +1,13 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.command.PIDSubsystem;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+
 
 public class RotateMechanism extends PIDSubsystem{
     
+    GyroSensor gyroSensor = Robot.mGyroSensor;
+
     public RotateMechanism() {
         super(1.0, 0, 0);
         setAbsoluteTolerance(1);
@@ -14,7 +18,7 @@ public class RotateMechanism extends PIDSubsystem{
     }
 
     public double returnPIDInput() {
-        return 1; //return gyrosensor.getangle; pass gyrosensor angle
+        return gyroSensor.getAngle(); //return gyrosensor.getangle; pass gyrosensor angle
     }
 
     public void usePIDOutput(double d) {
