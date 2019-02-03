@@ -10,9 +10,14 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.VictorSP;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+
+import edu.wpi.first.wpilibj.PIDController;
+import edu.wpi.first.wpilibj.PIDOutput;
+import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.PIDSourceType;
 
 import java.text.DecimalFormat;
 
@@ -31,12 +36,10 @@ public class Robot extends TimedRobot {
 
   public static Gamepad mGamepad;
   
-  public static VictorSP mFrontLeft;
-  public static VictorSP mMiddleLeft;
-  public static VictorSP mRearLeft;
-  public static VictorSP mFrontRight;
-  public static VictorSP mMiddleRight;
-  public static VictorSP mRearRight;
+  public static WPI_TalonSRX mFrontLeft;
+  public static WPI_TalonSRX mRearLeft;
+  public static WPI_TalonSRX mFrontRight;
+  public static WPI_TalonSRX mRearRight;
 
   public static SpeedControllerGroup mLeftSpeedControllers;
   public static SpeedControllerGroup mRightSpeedControllers;
@@ -52,7 +55,8 @@ public class Robot extends TimedRobot {
   public static DecimalFormat mDecimalFormat;
 
   public static GyroSensor mGyroSensor;
-
+  public GyroPIDController gyroPIDController;
+  
   public static double gyroAngle;
 
   /**
@@ -71,6 +75,7 @@ public class Robot extends TimedRobot {
     initializeDifferentialDrive();
     initializeTankDrive();
     initializeGyroSensor();
+    initializeGyroPIDController();
     
     mDecimalFormat = (DecimalFormat) DecimalFormat.getNumberInstance();
     mDecimalFormat.applyPattern("0.##");
@@ -132,26 +137,35 @@ public class Robot extends TimedRobot {
     updateButtonStates();
     updateRobotTurnDegree(Gamepad.DPAD_State);
     if(TargetAngle != -1) {
-      int rotateDistance = Math.floorMod((int)(gyroAngle - TargetAngle), 360);
-      SmartDashboard.putNumber("rotate Distance angle", rotateDistance);
-      if(rotateDistance <= 5 || Gamepad.Y_Button_State) {
+      if(gyroPIDController.onTarget()) {
         TargetAngle = -1;
-        mDifferentialDrive.stopMotor();
+      // int rotateDistance = Math.floorMod((int)(gyroAngle - TargetAngle), 360);
+      // SmartDashboard.putNumber("rotate Distance angle", rotateDistance);
+      // if(rotateDistance <= 5 || Gamepad.Y_Button_State) {
+      //   TargetAngle = -1;
+      //   mDifferentialDrive.stopMotor();
+      // }
+      // else {
+      //   if(rotateDistance >= 180) {
+      //     mDifferentialDrive.tankDrive(.4, -.4); //TODO check max speed and minimum precision needed
+      //   }
+      //   else {
+      //     mDifferentialDrive.tankDrive(-.4, .4);
+      //   }
+      // }
       }
       else {
-        if(rotateDistance >= 180) {
-          mDifferentialDrive.tankDrive(.4, -.4); //TODO check max speed and minimum precision needed
-        }
-        else {
-          mDifferentialDrive.tankDrive(-.4, .4);
-        }
+        gyroPIDController.calculate();
+        mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
       }
     }
     else {
       updateSpeedLimit(Gamepad.Right_Bumper_State, Gamepad.Left_Bumper_State, Gamepad.B_Button_State);
       updateDrive(Gamepad.Left_Trigger_Axis_State, Gamepad.Right_Trigger_Axis_State, Gamepad.Left_Stick_Y_Axis_State, Gamepad.Right_Stick_Y_Axis_State);
     }
+
     updateSmartDashboard();
+    
   }
 
   /**
@@ -168,12 +182,15 @@ public class Robot extends TimedRobot {
   }
 
   private static void initializeMotorControllers() {
-    mFrontLeft = new VictorSP(Statics.Front_Left_Channel);
-    //mMiddleLeft = new VictorSP(Statics.Middle_Left_Channel);
-    mRearLeft = new VictorSP(Statics.Rear_Left_Channel);
-    mFrontRight = new VictorSP(Statics.Front_Right_Channel);
-    //mMiddleRight = new VictorSP(Statics.Middle_Right_Channel);
-    mRearRight = new VictorSP(Statics.Rear_Right_Channel);
+    mFrontLeft = new WPI_TalonSRX(Statics.Front_Left_CAN_ID);
+    mRearLeft = new WPI_TalonSRX(Statics.Rear_Left_CAN_ID);
+    mFrontRight = new WPI_TalonSRX(Statics.Front_Right_CAN_ID);
+    mRearRight = new WPI_TalonSRX(Statics.Rear_Right_CAN_ID);
+
+    mFrontLeft.configFactoryDefault();
+    mRearLeft.configFactoryDefault();
+    mFrontRight.configFactoryDefault();
+    mRearRight.configFactoryDefault();
   }
 
   private static void initializeSpeedLimit() {
@@ -277,4 +294,32 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Gyro Angle", gyroAngle);
     }
 
+    private class gyroPIDOutput implements PIDOutput {
+
+      public void pidWrite(double output) {
+        mLeftSpeed = output;
+        mRightSpeed = -output;
+      }
+    }
+
+    private class gyroPIDSource implements PIDSource {
+
+      public PIDSourceType getPIDSourceType() {
+        return PIDSourceType.kDisplacement;
+      }
+
+      public double pidGet() {
+        return gyroAngle;
+      }
+
+      public void setPIDSourceType(PIDSourceType pidsource) {
+        
+      }
+    }
+
+    public void initializeGyroPIDController() {
+      gyroPIDController = new GyroPIDController(.1, 0, 0, 0, new gyroPIDSource(), new gyroPIDOutput());
+      gyroPIDController.setPercentTolerance(1.0);
+      gyroPIDController.setSetpoint(0);
+    }
 }
