@@ -16,4 +16,8 @@ public class GyroSensor {
     public double getAngle() {
         return GyroSensor.getAngle();
     }
+
+    public ADXRS450_Gyro getActualGyroSensor() {
+        return GyroSensor;
+    }
 }
