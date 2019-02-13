@@ -18,6 +18,11 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
 import java.text.DecimalFormat;
 
+//TODO Ultrasonic paths
+//TODO controls
+//TODO Switch to Navx
+//TODO Second Gamepad
+
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the TimedRobot
@@ -110,7 +115,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     m_autoSelected = m_chooser.getSelected();
-    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
+    m_autoSelected = SmartDashboard.getString("Auto Selector", kAuto1);
     System.out.println("Auto selected: " + m_autoSelected);
   }
 
@@ -121,11 +126,12 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {
     switch (m_autoSelected) {
       case kAuto1:
-        // Put custom auto code here
+        // TODO Put custom auto code here
         break;
       case kAuto2:
+        // TODO Put custom auto code here
       default:
-        // Put default auto code here
+        // TODO Put default auto code here
         break;
     }
   }
@@ -137,22 +143,9 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     updateSensors();
     updateButtonStates();
-    // updateReverseDriveValue(Gamepad1.Right_Bumper_State);
-    updateRobotTurnDegree(Gamepad.DPAD_State);
-    if(TargetAngle != -1) {
-      if(gyroPIDController.onTarget()) {
-        TargetAngle = -1;
-      }
-      else {
-        gyroPIDController.calculate();
-        mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
-      }
-    }
-    else {
-      updateSpeedLimit(Gamepad1.B_Button_State);
-      updateDrive(Gamepad1.Left_Trigger_Axis_State, Gamepad1.Right_Trigger_Axis_State, Gamepad1.Left_Stick_Y_Axis_State, Gamepad1.Right_Stick_Y_Axis_State, inReverseDrive);
-    }
-
+    // TODO updateReverseDriveValue(Gamepad1.Right_Bumper_State);
+    updateRobotTurnDegree();
+    updateMove();
     updateSmartDashboard();
     
   }
@@ -163,6 +156,22 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
 
+  }
+
+  private void updateMove() {
+    if(TargetAngle != -1) {
+      if(gyroPIDController.onTarget()) {
+        TargetAngle = -1;
+      }
+      else {
+        gyroPIDController.calculate();
+        mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
+      }
+    }
+    else {
+      updateSpeedLimit();
+      updateDrive();
+    }
   }
 
   private void initializeGamepad() {
@@ -191,8 +200,8 @@ public class Robot extends TimedRobot {
     mGyroSensor.initializeGyroSensor();
   }
 
-  private static void updateSpeedLimit(boolean speedButtonState) {
-    if(speedButtonState) {
+  private void updateSpeedLimit() {
+    if(Gamepad1.B_Button_State) {
       mSpeedLimit += .2;
       if (mSpeedLimit > 1) mSpeedLimit = 0;
     }
@@ -220,10 +229,10 @@ public class Robot extends TimedRobot {
   }
 
   //else contains true tank drive
-  public void updateDrive(double leftTriggerAxisState, double rightTriggerAxisState, double leftStickYAxisState, double rightStickYAxisState, boolean reverseDrive) {
-    if(Math.abs(leftStickYAxisState) < .1 && Math.abs(rightStickYAxisState) < .1) {
-      mLeftSpeed = leftTriggerAxisState * leftTriggerAxisState; //squared
-      mRightSpeed = rightTriggerAxisState * rightTriggerAxisState; //squared
+  public void updateDrive() {
+    if(Math.abs(Gamepad1.Left_Stick_Y_Axis_State) < .1 && Math.abs(Gamepad1.Right_Stick_Y_Axis_State) < .1) {
+      mLeftSpeed = Math.pow(Gamepad1.Left_Trigger_Axis_State, 2); //squared
+      mRightSpeed = Math.pow(Gamepad1.Right_Trigger_Axis_State, 2); //squared
 
       if (mLeftSpeed > mRightSpeed) {
         if (mLeftSpeed > mSpeedLimit) {
@@ -249,8 +258,8 @@ public class Robot extends TimedRobot {
       }
     }
     else {
-      mLeftSpeed = leftStickYAxisState * Math.abs(leftStickYAxisState);
-      mRightSpeed = rightStickYAxisState * Math.abs(rightStickYAxisState);
+      mLeftSpeed = Gamepad1.Left_Stick_Y_Axis_State * Math.abs(Gamepad1.Left_Stick_Y_Axis_State);
+      mRightSpeed = Gamepad1.Right_Stick_Y_Axis_State * Math.abs(Gamepad1.Right_Stick_Y_Axis_State);
 
       if(Math.abs(mLeftSpeed) > mSpeedLimit) {
         if(mLeftSpeed < 0) {
@@ -278,9 +287,9 @@ public class Robot extends TimedRobot {
     }
   }
 
-    public void updateRobotTurnDegree(Double DPADDegree) {
-      if(DPADDegree != -1) {
-        TargetAngle = DPADDegree;
+    public void updateRobotTurnDegree() {
+      if(Gamepad.DPAD_State != -1) {
+        TargetAngle = Gamepad.DPAD_State;
         gyroPIDController.setSetpoint(TargetAngle);
       }
     }
@@ -306,7 +315,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Calculated PID Controller Value", gyroPIDController.get());
     SmartDashboard.putNumber("Ultrasonic Distance", ultrasonicDistance);
     SmartDashboard.putBoolean("Ultrasonic enabled", mUltrasonicSensor.getActualSensor().isEnabled());
-    SmartDashboard.putBoolean("is range valid", mUltrasonicSensor.ultrasonicSensor.isRangeValid());
+    SmartDashboard.putBoolean("Range valid", UltrasonicSensor.ultrasonicSensor.isRangeValid());
     } 
 
     private class gyroPIDOutput implements PIDOutput {
