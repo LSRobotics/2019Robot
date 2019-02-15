@@ -22,6 +22,7 @@ import java.text.DecimalFormat;
 //TODO controls
 //TODO Switch to Navx
 //TODO Second Gamepad
+//TODO Lights
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -49,11 +50,10 @@ public class Robot extends TimedRobot {
 
   public static DifferentialDrive mDifferentialDrive;
 
-  public static double mSpeedLimit;
   public static double mLeftSpeed;
   public static double mRightSpeed;
 
-  public static boolean inReverseDrive = false;
+  public static boolean reverseDrive = false;
 
   public static double TargetAngle = -1;
 
@@ -80,9 +80,7 @@ public class Robot extends TimedRobot {
 
     initializeGamepad();
     initializeMotorControllers();
-    initializeSpeedLimit();
     initializeDifferentialDrive();
-    initializeTankDrive();
     initializeGyroSensor();
     initializeGyroPIDController();
     initializeUltrasonicSensor();
@@ -129,9 +127,7 @@ public class Robot extends TimedRobot {
         // TODO Put custom auto code here
         break;
       case kAuto2:
-        // TODO Put custom auto code here
       default:
-        // TODO Put default auto code here
         break;
     }
   }
@@ -143,7 +139,6 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     updateSensors();
     updateButtonStates();
-    // TODO updateReverseDriveValue(Gamepad1.Right_Bumper_State);
     updateRobotTurnDegree();
     updateMove();
     updateSmartDashboard();
@@ -169,7 +164,6 @@ public class Robot extends TimedRobot {
       }
     }
     else {
-      updateSpeedLimit();
       updateDrive();
     }
   }
@@ -191,21 +185,9 @@ public class Robot extends TimedRobot {
     mRearRight.configFactoryDefault();
   }
 
-  private static void initializeSpeedLimit() {
-    mSpeedLimit = 1;
-  }
-
   private static void initializeGyroSensor() {
     mGyroSensor = new GyroSensor();
     mGyroSensor.initializeGyroSensor();
-  }
-
-  private void updateSpeedLimit() {
-    if(Gamepad1.B_Button_State) {
-      mSpeedLimit += .2;
-      if (mSpeedLimit > 1) mSpeedLimit = 0;
-    }
-    SmartDashboard.putNumber("Speed Limit", mSpeedLimit);
   }
 
   private static void initializeDifferentialDrive() {
@@ -215,12 +197,9 @@ public class Robot extends TimedRobot {
     mDifferentialDrive = new DifferentialDrive(mLeftSpeedControllers, mRightSpeedControllers);
   }
 
-  private static void initializeTankDrive() {
-    mDifferentialDrive.tankDrive(mSpeedLimit, mSpeedLimit);
-  }
-
   public void updateButtonStates() {
     Gamepad1.putButtonStates();
+    if(Gamepad1.Right_Bumper_State) reverseDrive = !reverseDrive;
   }
 
   public void updateSensors() {
@@ -233,75 +212,33 @@ public class Robot extends TimedRobot {
     if(Math.abs(Gamepad1.Left_Stick_Y_Axis_State) < .1 && Math.abs(Gamepad1.Right_Stick_Y_Axis_State) < .1) {
       mLeftSpeed = Math.pow(Gamepad1.Left_Trigger_Axis_State, 2); //squared
       mRightSpeed = Math.pow(Gamepad1.Right_Trigger_Axis_State, 2); //squared
-
       if (mLeftSpeed > mRightSpeed) {
-        if (mLeftSpeed > mSpeedLimit) {
-          mLeftSpeed = mSpeedLimit;
-        }
-        // if(reverseDrive) {
-          mDifferentialDrive.tankDrive(mLeftSpeed, mLeftSpeed);
-        // }
-        // else {
-        //   mDifferentialDrive.tankDrive(-mLeftSpeed, -mLeftSpeed);
-        // }
+        mRightSpeed = mLeftSpeed;
       }
       else if (mRightSpeed > mLeftSpeed) {
-        if (mRightSpeed > mSpeedLimit) {
-          mRightSpeed = mSpeedLimit;
-        }
-        // if(reverseDrive) {
-          mDifferentialDrive.tankDrive(-mRightSpeed, -mRightSpeed);
-        // }
-        // else {
-        //   mDifferentialDrive.tankDrive(mRightSpeed, mRightSpeed);
-        // }
+        mLeftSpeed = mRightSpeed;
       }
     }
+
+
     else {
       mLeftSpeed = Gamepad1.Left_Stick_Y_Axis_State * Math.abs(Gamepad1.Left_Stick_Y_Axis_State);
       mRightSpeed = Gamepad1.Right_Stick_Y_Axis_State * Math.abs(Gamepad1.Right_Stick_Y_Axis_State);
-
-      if(Math.abs(mLeftSpeed) > mSpeedLimit) {
-        if(mLeftSpeed < 0) {
-          mLeftSpeed = -mSpeedLimit;
-        }
-        else {
-          mLeftSpeed = mSpeedLimit;
-        }
-      }
-      if(Math.abs(mRightSpeed) > mSpeedLimit) {
-        if(mRightSpeed < 0) {
-          mRightSpeed = -mSpeedLimit;
-        }
-        else {
-          mRightSpeed = mSpeedLimit;
-        }
-      }
-
-      // if(reverseDrive) {
-        mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
-      // }
-      // else {
-      //   mDifferentialDrive.tankDrive(-mLeftSpeed, -mRightSpeed);
-      // }
+      
     }
+    if (reverseDrive) {
+      mLeftSpeed = -mLeftSpeed;
+      mRightSpeed = -mRightSpeed;
+    } 
+    mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
   }
 
-    public void updateRobotTurnDegree() {
-      if(Gamepad.DPAD_State != -1) {
-        TargetAngle = Gamepad.DPAD_State;
-        gyroPIDController.setSetpoint(TargetAngle);
-      }
+  public void updateRobotTurnDegree() {
+    if(Gamepad.DPAD_State != -1) {
+      TargetAngle = Gamepad.DPAD_State;
+      gyroPIDController.setSetpoint(TargetAngle);
     }
-
-    // public void updateReverseDriveValue(boolean gamepad1RightBumperValue) {
-    //   if(!inReverseDrive && gamepad1RightBumperValue) {
-    //     inReverseDrive = true;
-    //   }
-    //   if(inReverseDrive && gamepad1RightBumperValue) {
-    //     inReverseDrive = false;
-    //   }
-    // }
+  }
 
     public void updateSmartDashboard() {
     SmartDashboard.putNumber("Controller Left Trigger Axis State", Gamepad1.Left_Trigger_Axis_State);
