@@ -80,6 +80,8 @@ public class Robot extends TimedRobot {
   
   public static double gyroAngle;
 
+  public PixyCamera pixyCam;
+
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -203,6 +205,11 @@ public class Robot extends TimedRobot {
   private static void initializeGyroSensor() {
     mGyroSensor = new GyroSensor();
     mGyroSensor.initializeGyroSensor();
+  }
+
+  public void initializePixyCam() {
+    pixyCam = new PixyCamera();
+    pixyCam.startPixyCam();
   }
 
   private static void initializeDifferentialDrive() {

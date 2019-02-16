@@ -1,7 +1,11 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj.I2C;
+import edu.wpi.first.cameraserver.CameraServer;
 
 public class PixyCamera {
-    
+
+    public void startPixyCam() {
+        CameraServer.getInstance().startAutomaticCapture();
+    }
+
 }
