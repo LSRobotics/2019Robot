@@ -16,7 +16,8 @@ import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
-import java.text.DecimalFormat;
+import edu.wpi.first.wpilibj.DigitalInput;
+
 
 //TODO Ultrasonic paths
 //TODO controls
@@ -58,7 +59,8 @@ public class Robot extends TimedRobot {
 
   public static double TargetAngle = -1;
 
-  public static DecimalFormat mDecimalFormat;
+  public onGoingPath currentPath = null;
+  public static int step = 0;
 
   public static GyroSensor mGyroSensor;
   public GyroPIDController gyroPIDController;
@@ -68,6 +70,13 @@ public class Robot extends TimedRobot {
   public UltrasonicPIDController ultrasonicPIDController;
   public static double leftUltrasonicDistance;
   public static double rightUltrasonicDistance;
+
+  public static LIDARSensor mLIDARSensor;
+  public LIDARPIDController lidarpidController;
+
+  public double lidarDistance;
+
+  public static boolean reverseAuto = false;
   
   public static double gyroAngle;
 
@@ -87,6 +96,7 @@ public class Robot extends TimedRobot {
     initializeGyroSensor();
     initializeGyroPIDController();
     initializeUltrasonicSensor();
+    initializeLIDARSensor();
 
   }
 
@@ -145,7 +155,7 @@ public class Robot extends TimedRobot {
     updateRobotTurnDegree();
     updateMove();
     updateSmartDashboard();
-    
+    if (currentPath == null) updatePresetPaths();
   }
 
   /**
@@ -174,6 +184,8 @@ public class Robot extends TimedRobot {
   private void initializeGamepad() {
     ChassisGamepad = new Gamepad(0);
     ChassisGamepad.putButtonStates();
+    MechanismsGamepad = new Gamepad(1);
+    MechanismsGamepad.putButtonStates();
   }
 
   private static void initializeMotorControllers() {
@@ -209,11 +221,12 @@ public class Robot extends TimedRobot {
     gyroAngle = mGyroSensor.getAngle();
     leftUltrasonicDistance = mLeftUltrasonicSensor.getRangeInches();
     rightUltrasonicDistance = mRightUltrasonicSensor.getRangeInches();
+    lidarDistance = mLIDARSensor.getDistance();
   }
 
   //else contains true tank drive
   public void updateDrive() {
-    if(Math.abs(ChassisGamepad.Left_Stick_Y_Axis_State) < .1 && Math.abs(ChassisGamepad.Right_Stick_Y_Axis_State) < .1) {
+    if(Math.abs(ChassisGamepad.Left_Stick_Y_Axis_State) < Statics.GAMEPAD_AXIS_TOLERANCE && Math.abs(ChassisGamepad.Right_Stick_Y_Axis_State) < Statics.GAMEPAD_AXIS_TOLERANCE) {
       mLeftSpeed = Math.pow(ChassisGamepad.Left_Trigger_Axis_State, 2); //squared
       mRightSpeed = Math.pow(ChassisGamepad.Right_Trigger_Axis_State, 2); //squared
       if (mLeftSpeed > mRightSpeed) {
@@ -291,8 +304,8 @@ public class Robot extends TimedRobot {
     }
 
     public void initializeGyroPIDController() {
-      gyroPIDController = new GyroPIDController(.1, 0, 0, 0, mGyroSensor.getActualGyroSensor(), new gyroPIDOutput());
-      gyroPIDController.setPercentTolerance(2);
+      gyroPIDController = new GyroPIDController(Statics.GYRO_P, Statics.GYRO_I, Statics.GYRO_D, Statics.GYRO_F, mGyroSensor.getActualGyroSensor(), new gyroPIDOutput());
+      gyroPIDController.setPercentTolerance(Statics.PID_GYRO_TOLERANCE);
       gyroPIDController.enable();
     }
 
@@ -314,4 +327,87 @@ public class Robot extends TimedRobot {
       ultrasonicPIDController.setPercentTolerance(2);
       ultrasonicPIDController.enable();
     }
-}
+
+    public void initializeLIDARSensor() {
+      mLIDARSensor = new LIDARSensor(new DigitalInput(Statics.LIDAR_Sensor_Channel));
+      lidarpidController.setPercentTolerance(1);
+      lidarpidController.enable();
+    } 
+
+    public void initializeLIDARPID() {
+      lidarpidController = new LIDARPIDController(.1, 0, 0, 0, mLIDARSensor, new LIDARPIDOutput());
+    }
+
+    private class LIDARPIDOutput implements PIDOutput {
+
+      public void pidWrite(double output) {
+        mLeftSpeed = output;
+        mRightSpeed = output;
+      }
+    }
+
+    public void updatePresetPaths() {
+      reverseAuto = MechanismsGamepad.Left_Bumper_State;
+      if (MechanismsGamepad.A_Button_State) {
+        currentPath = onGoingPath.nearCargo;
+      }
+      else if (MechanismsGamepad.B_Button_State) {
+        currentPath = onGoingPath.middleCargo;
+      }
+      else if (MechanismsGamepad.X_Button_State) {
+        currentPath = onGoingPath.rocketShip;
+      }
+      else if (MechanismsGamepad.Y_Button_State) {
+        currentPath = onGoingPath.farCargo;
+      }
+    }
+
+    public void runPresetPaths() {
+      if (step == 0) {
+         if(lidarDistance > 2) {
+          lidarpidController.setSetpoint(32);
+          if(!lidarpidController.onTarget()) {
+             lidarpidController.calculate();
+             mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
+          }
+          else {
+            step++;
+          }
+        }
+      }
+      if (step == 1) {
+         gyroPIDController.setSetpoint(0);
+        if(!gyroPIDController.onTarget()) {
+          gyroPIDController.calculate();
+           mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
+        }
+        else {
+          step++;
+        }
+       }
+       if (step == 2) {
+         if(lidarDistance > 2) {
+           lidarpidController.setSetpoint(currentPath.lidarDistance);
+           if(!lidarpidController.onTarget()) {
+             lidarpidController.calculate();
+             mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
+            }
+           else {
+             step++;
+           }
+        }
+       }
+       if (step == 3) {
+         if (!reverseAuto) gyroPIDController.setSetpoint(currentPath.gyroAngle);
+         else gyroPIDController.setSetpoint((currentPath.gyroAngle+180) % 360);
+         if(!gyroPIDController.onTarget()) {
+           gyroPIDController.calculate();
+           mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
+         }
+        else {
+          step = 0;
+          currentPath = null;
+        }
+      }
+     }
+   }

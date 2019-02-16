@@ -2,11 +2,12 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.Counter;
 import edu.wpi.first.wpilibj.DigitalSource;
+import edu.wpi.first.wpilibj.PIDSource;
+import edu.wpi.first.wpilibj.PIDSourceType;
 
-public class LIDARSensor {
+public class LIDARSensor implements PIDSource{
 
     public Counter counter;
-    public double CALIBRATION_OFFSET = -18; //TODO figure out what this value is or if we need it at all.
 
     public LIDARSensor(DigitalSource source) {
         counter = new Counter(source);
@@ -21,8 +22,21 @@ public class LIDARSensor {
         if(counter.get() < 1) {
             return 0;
         }
-        distanceCentimeters = (counter.getPeriod() * 1000000.0 / 10.0) + CALIBRATION_OFFSET; //gets centimeters from pulse width
-        distanceInches = distanceCentimeters * 0.393701; //conversion to inches
+        distanceCentimeters = (counter.getPeriod() * 1000000.0 / 10.0) + Statics.LIDAR_CALIBRATION_OFFSET; //gets centimeters from pulse width
+        distanceInches = distanceCentimeters * Statics.CM_TO_IN; //conversion to inches
         return distanceInches;
     }
+
+    public PIDSourceType getPIDSourceType() {
+        return PIDSourceType.kDisplacement;
+    }
+
+    public double pidGet() {
+        return this.getDistance();
+    }
+
+    public void setPIDSourceType(PIDSourceType sourceType) {
+        
+    }
+
 }
