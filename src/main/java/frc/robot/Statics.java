@@ -12,5 +12,10 @@ public class Statics {
     public static int High_Cargo_CAN_ID = 0;
 
     public static int Front_Over_Roller_CAN_ID = 0;
+
+    public static int Left_Ultrasonic_PingChannel = 0;
+    public static int Left_Ultrasonic_EchoChannel = 1;
+    public static int Right_Ultrasonic_PingChannel = 2;
+    public static int Right_Ultrasonic_EchoChannel = 3;
     
 }

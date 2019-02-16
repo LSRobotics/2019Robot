@@ -23,6 +23,7 @@ import java.text.DecimalFormat;
 //TODO Switch to Navx
 //TODO Second Gamepad
 //TODO Lights
+//TODO SmartDashboard Design
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -37,8 +38,8 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-  public Gamepad Gamepad1;
-  public Gamepad Gamepad2;
+  public Gamepad ChassisGamepad;
+  public Gamepad MechanismsGamepad;
   
   public static WPI_TalonSRX mFrontLeft;
   public static WPI_TalonSRX mRearLeft;
@@ -62,9 +63,11 @@ public class Robot extends TimedRobot {
   public static GyroSensor mGyroSensor;
   public GyroPIDController gyroPIDController;
 
-  public static UltrasonicSensor mUltrasonicSensor;
+  public static UltrasonicSensor mLeftUltrasonicSensor;
+  public static UltrasonicSensor mRightUltrasonicSensor;
   public UltrasonicPIDController ultrasonicPIDController;
-  public static double ultrasonicDistance;
+  public static double leftUltrasonicDistance;
+  public static double rightUltrasonicDistance;
   
   public static double gyroAngle;
 
@@ -169,8 +172,8 @@ public class Robot extends TimedRobot {
   }
 
   private void initializeGamepad() {
-    Gamepad1 = new Gamepad(0);
-    Gamepad1.putButtonStates();
+    ChassisGamepad = new Gamepad(0);
+    ChassisGamepad.putButtonStates();
   }
 
   private static void initializeMotorControllers() {
@@ -198,20 +201,21 @@ public class Robot extends TimedRobot {
   }
 
   public void updateButtonStates() {
-    Gamepad1.putButtonStates();
-    if(Gamepad1.Right_Bumper_State) reverseDrive = !reverseDrive;
+    ChassisGamepad.putButtonStates();
+    if(ChassisGamepad.Right_Bumper_State) reverseDrive = !reverseDrive;
   }
 
   public void updateSensors() {
     gyroAngle = mGyroSensor.getAngle();
-    ultrasonicDistance = mUltrasonicSensor.getRangeInches();
+    leftUltrasonicDistance = mLeftUltrasonicSensor.getRangeInches();
+    rightUltrasonicDistance = mRightUltrasonicSensor.getRangeInches();
   }
 
   //else contains true tank drive
   public void updateDrive() {
-    if(Math.abs(Gamepad1.Left_Stick_Y_Axis_State) < .1 && Math.abs(Gamepad1.Right_Stick_Y_Axis_State) < .1) {
-      mLeftSpeed = Math.pow(Gamepad1.Left_Trigger_Axis_State, 2); //squared
-      mRightSpeed = Math.pow(Gamepad1.Right_Trigger_Axis_State, 2); //squared
+    if(Math.abs(ChassisGamepad.Left_Stick_Y_Axis_State) < .1 && Math.abs(ChassisGamepad.Right_Stick_Y_Axis_State) < .1) {
+      mLeftSpeed = Math.pow(ChassisGamepad.Left_Trigger_Axis_State, 2); //squared
+      mRightSpeed = Math.pow(ChassisGamepad.Right_Trigger_Axis_State, 2); //squared
       if (mLeftSpeed > mRightSpeed) {
         mRightSpeed = mLeftSpeed;
       }
@@ -222,8 +226,8 @@ public class Robot extends TimedRobot {
 
 
     else {
-      mLeftSpeed = Gamepad1.Left_Stick_Y_Axis_State * Math.abs(Gamepad1.Left_Stick_Y_Axis_State);
-      mRightSpeed = Gamepad1.Right_Stick_Y_Axis_State * Math.abs(Gamepad1.Right_Stick_Y_Axis_State);
+      mLeftSpeed = ChassisGamepad.Left_Stick_Y_Axis_State * Math.abs(ChassisGamepad.Left_Stick_Y_Axis_State);
+      mRightSpeed = ChassisGamepad.Right_Stick_Y_Axis_State * Math.abs(ChassisGamepad.Right_Stick_Y_Axis_State);
       
     }
     if (reverseDrive) {
@@ -234,32 +238,55 @@ public class Robot extends TimedRobot {
   }
 
   public void updateRobotTurnDegree() {
-    if(Gamepad.DPAD_State != -1) {
-      TargetAngle = Gamepad.DPAD_State;
+    if(ChassisGamepad.DPAD_State != -1) {
+      TargetAngle = ChassisGamepad.DPAD_State;
       gyroPIDController.setSetpoint(TargetAngle);
     }
   }
 
     public void updateSmartDashboard() {
-    SmartDashboard.putNumber("Controller Left Trigger Axis State", Gamepad1.Left_Trigger_Axis_State);
-    SmartDashboard.putNumber("Controller Right Trigger Axis State", Gamepad1.Right_Trigger_Axis_State);
-    SmartDashboard.putNumber("Controller Left Stick Axis State", Gamepad1.Left_Stick_Y_Axis_State);
-    SmartDashboard.putNumber("Controller Right Stick Axis State", Gamepad1.Right_Stick_Y_Axis_State);
-    SmartDashboard.putNumber("Robot Turn Degree", TargetAngle);
-    SmartDashboard.putNumber("Gyro Angle", gyroAngle);
-    SmartDashboard.putNumber("LeftSpeed", mLeftSpeed);
-    SmartDashboard.putNumber("RightSpeed", mRightSpeed);
-    SmartDashboard.putNumber("Calculated PID Controller Value", gyroPIDController.get());
-    SmartDashboard.putNumber("Ultrasonic Distance", ultrasonicDistance);
-    SmartDashboard.putBoolean("Ultrasonic enabled", mUltrasonicSensor.getActualSensor().isEnabled());
-    SmartDashboard.putBoolean("Range valid", UltrasonicSensor.ultrasonicSensor.isRangeValid());
+    //all Chassis Gamepad Values
+    SmartDashboard.putNumber("Chassis Controller Left Trigger Axis State", ChassisGamepad.Left_Trigger_Axis_State);
+    SmartDashboard.putNumber("Chassis Controller Right Trigger Axis State", ChassisGamepad.Right_Trigger_Axis_State);
+    SmartDashboard.putNumber("Chassis Controller Left Stick  Y Axis State", ChassisGamepad.Left_Stick_Y_Axis_State);
+    SmartDashboard.putNumber("Chassis Controller Right Stick Y Axis State", ChassisGamepad.Right_Stick_Y_Axis_State);
+    SmartDashboard.putBoolean("Chassis Controller A Button State", ChassisGamepad.A_Button_State);
+    SmartDashboard.putBoolean("Chassis Controller B Button State", ChassisGamepad.B_Button_State);
+    SmartDashboard.putBoolean("Chassis Controller X Button State", ChassisGamepad.X_Button_State);
+    SmartDashboard.putBoolean("Chassis Controller Y Button State", ChassisGamepad.Y_Button_State);
+    SmartDashboard.putBoolean("Chassis Controller Left Bumper State", ChassisGamepad.Left_Bumper_State);
+    SmartDashboard.putBoolean("Chassis Controller Right Bumper State", ChassisGamepad.Right_Bumper_State);
+
+    //all Mechanism Gamepad Values
+    SmartDashboard.putNumber("Mechanisms Controller Left Trigger Axis State", MechanismsGamepad.Left_Trigger_Axis_State);
+    SmartDashboard.putNumber("Mechanisms Controller Right Trigger Axis State", MechanismsGamepad.Right_Trigger_Axis_State);
+    SmartDashboard.putNumber("Mechanisms Controller Left Stick Y Axis State", MechanismsGamepad.Left_Stick_Y_Axis_State);
+    SmartDashboard.putNumber("Mechanisms Controller Right Stick Y Axis State", MechanismsGamepad.Right_Stick_Y_Axis_State);
+    SmartDashboard.putBoolean("MechanismS Controller A Button State", MechanismsGamepad.A_Button_State);
+    SmartDashboard.putBoolean("Mechanisms Controller B Button State", MechanismsGamepad.B_Button_State);
+    SmartDashboard.putBoolean("Mechanisms Controller X Button State", MechanismsGamepad.X_Button_State);
+    SmartDashboard.putBoolean("Mechanisms Controller Y Button State", MechanismsGamepad.Y_Button_State);
+    SmartDashboard.putBoolean("Mechanisms Controller Left Bumper State", MechanismsGamepad.Left_Bumper_State);
+    SmartDashboard.putBoolean("Mechanisms Controller Right Bumper State", MechanismsGamepad.Right_Bumper_State);
+
+    //all other values
+    SmartDashboard.putNumber("Currrent Target Angle in Degrees", TargetAngle);
+    SmartDashboard.putNumber("Gyro Angle in Degrees", gyroAngle);
+    SmartDashboard.putNumber("Left Tank Drive Speed", mLeftSpeed);
+    SmartDashboard.putNumber("Right Tank Drive Speed", mRightSpeed);
+    SmartDashboard.putNumber("Calculated Gyro PID Controller Output Value", gyroPIDController.get());
+    SmartDashboard.putNumber("Calculated Ultrasonic PID Controller Output Value", ultrasonicPIDController.get());
+    SmartDashboard.putNumber("Left Ultrasonic Distance in inches", leftUltrasonicDistance);
+    SmartDashboard.putNumber("Right Ultrasonic Distance in inches", rightUltrasonicDistance);
+    SmartDashboard.putBoolean("Validity of Left Ultrasonic Range", mLeftUltrasonicSensor.isRangeValid());
+    SmartDashboard.putBoolean("Validity of Right Ultrasonic Range", mRightUltrasonicSensor.isRangeValid());
     } 
 
     private class gyroPIDOutput implements PIDOutput {
 
       public void pidWrite(double output) {
         mLeftSpeed = output;
-        mRightSpeed = -output; //todo check this
+        mRightSpeed = -output; //TODO check this
       }
     }
 
@@ -270,8 +297,8 @@ public class Robot extends TimedRobot {
     }
 
     public void initializeUltrasonicSensor() {
-      mUltrasonicSensor = new UltrasonicSensor();
-      mUltrasonicSensor.initializeUltrasonic();
+      mLeftUltrasonicSensor = new UltrasonicSensor(Statics.Left_Ultrasonic_PingChannel, Statics.Left_Ultrasonic_EchoChannel);
+      mRightUltrasonicSensor = new UltrasonicSensor(Statics.Right_Ultrasonic_PingChannel, Statics.Right_Ultrasonic_EchoChannel);
     }
 
     private class UltrasonicPIDOutput implements PIDOutput {
@@ -283,7 +310,7 @@ public class Robot extends TimedRobot {
     }
 
     public void initializeUltrasonicPIDController() {
-      ultrasonicPIDController = new UltrasonicPIDController(.1, 0, 0, 0, mUltrasonicSensor.getActualSensor(), new UltrasonicPIDOutput());
+      ultrasonicPIDController = new UltrasonicPIDController(.1, 0, 0, 0, mLeftUltrasonicSensor.getActualSensor(), new UltrasonicPIDOutput());
       ultrasonicPIDController.setPercentTolerance(2);
       ultrasonicPIDController.enable();
     }

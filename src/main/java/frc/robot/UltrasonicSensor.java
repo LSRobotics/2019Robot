@@ -5,11 +5,10 @@ import edu.wpi.first.wpilibj.Ultrasonic;
 public class UltrasonicSensor {
 
     public static Ultrasonic ultrasonicSensor;
-    public int pingChannel = 3;
-    public int echoChannel = 2;
 
-    public void initializeUltrasonic() {
+    public UltrasonicSensor(int pingChannel, int echoChannel) {
         ultrasonicSensor = new Ultrasonic(pingChannel, echoChannel);
+        //initialization occurs within the constructor for this class
         ultrasonicSensor.setAutomaticMode(true);
         ultrasonicSensor.setDistanceUnits(Ultrasonic.Unit.kInches);
     }
@@ -28,5 +27,9 @@ public class UltrasonicSensor {
     
     public void ping() {
         ultrasonicSensor.ping();
+    }
+
+    public boolean isRangeValid() {
+        return ultrasonicSensor.isRangeValid();
     }
 }

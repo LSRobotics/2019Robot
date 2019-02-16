@@ -17,10 +17,6 @@ public class Gamepad {
     public boolean Y_Button_State = false;
     public boolean Left_Bumper_State = false;
     public boolean Right_Bumper_State = false;
-    public boolean Left_Stick_Down_State = false;
-    public boolean Right_Stick_Down_State = false;
-    public boolean Start_Button_State = false;
-    public boolean Back_Button_State = false;
 
     //double states of the sticks and triggers to be called in the robot class to be used as needed.
     public double Left_Stick_X_Axis_State = 0;
@@ -31,7 +27,7 @@ public class Gamepad {
     public double Right_Trigger_Axis_State = 0;
 
     //State of the DPAD to be called in the robot class to be used as needed
-    public static double DPAD_State = -1;
+    public double DPAD_State = -1;
 
     //methods
     public void putButtonStates() {
@@ -52,10 +48,6 @@ public class Gamepad {
         Y_Button_State = mXboxController.getYButton();
         Left_Bumper_State = mXboxController.getBumper(Hand.kLeft);
         Right_Bumper_State = mXboxController.getBumper(Hand.kRight);
-        Left_Stick_Down_State = mXboxController.getStickButton(Hand.kLeft);
-        Right_Stick_Down_State = mXboxController.getStickButton(Hand.kRight);
-        Start_Button_State = mXboxController.getStartButton();
-        Back_Button_State = mXboxController.getBackButton();
     }
 
     public void putGamepadAxisStates() {
@@ -67,7 +59,7 @@ public class Gamepad {
         Right_Trigger_Axis_State = mXboxController.getTriggerAxis(Hand.kRight);
     }
 
-    public static void putGamepadDPADState() {
+    public void putGamepadDPADState() {
         DPAD_State = mXboxController.getPOV();
     }
 
