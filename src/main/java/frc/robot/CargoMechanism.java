@@ -4,34 +4,60 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 public class CargoMechanism {
 
-    WPI_TalonSRX lowCargoMotorController;
+    WPI_TalonSRX lowCargoMotorController; 
     WPI_TalonSRX highCargoMotorController;
 
-    public void initializeCargoPickup() {
-        lowCargoMotorController = new WPI_TalonSRX(8);
-        highCargoMotorController = new WPI_TalonSRX(9);
+    public UltrasonicSensor ultrasonicSensor;
+
+    public void initialize() {
+        ultrasonicSensor = new UltrasonicSensor(Statics.Cargo_Ultrasonic_PingChannel, Statics.Cargo_Ultrasonic_EchoChannel);
+        lowCargoMotorController = new WPI_TalonSRX(Statics.Low_Cargo_CAN_ID);
+        highCargoMotorController = new WPI_TalonSRX(Statics.High_Cargo_CAN_ID);
     }
 
-    public void lowPickupOn() {
-        lowCargoMotorController.set(-.5);
+    public boolean lowCargoPickup() {
+        if(ultrasonicSensor.getRangeInches() > 6) {
+            lowCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
+            return true;
+        }
+        else {
+            lowCargoMotorController.set(0);
+            return false;
+        }
     }
 
-    public void lowPickupOff() {
-        lowCargoMotorController.set(0);
+    public boolean highCargoPickup() {
+        if(ultrasonicSensor.getRangeInches() > 6) {
+            highCargoMotorController.set(-Statics.High_Cargo_Motor_Speed);
+            return true;
+        }
+        else {
+            highCargoMotorController.set(0);
+            return false;
+        }
     }
 
-    public void highPickupOn() {
-        lowCargoMotorController.set(-.5);
-        highCargoMotorController.set(-.5);
+    public boolean lowCargoShoot() {
+        if(ultrasonicSensor.getRangeInches() < 6) {
+            lowCargoMotorController.set(Statics.Low_Cargo_Motor_Speed);
+            return true;
+        }
+        else {
+            lowCargoMotorController.set(0);
+            return false;
+        }
     }
 
-    public void highPickupOff() {
-        lowCargoMotorController.set(0);
-        highCargoMotorController.set(0);
-    }
-
-    public void cargoShoot() {
-        lowCargoMotorController.set(.7);
-        highCargoMotorController.set(.7);
+    public boolean highCargoShoot() {
+        if(ultrasonicSensor.getRangeInches() < 6) {
+            lowCargoMotorController.set(Statics.Low_Cargo_Motor_Speed);
+            highCargoMotorController.set(Statics.High_Cargo_Motor_Speed);
+            return true;
+        }
+        else {
+            lowCargoMotorController.set(0);
+            highCargoMotorController.set(0);
+            return false;
+        }
     }
 }

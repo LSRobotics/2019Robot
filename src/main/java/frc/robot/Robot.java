@@ -82,6 +82,9 @@ public class Robot extends TimedRobot {
 
   public PixyCamera pixyCam;
 
+  public activeCargoMechanism currentCargoMechanism = null;
+  public static CargoMechanism cargoMechanism;
+
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -353,18 +356,23 @@ public class Robot extends TimedRobot {
       }
     }
 
+    public void initializeCargoMechanism() {
+      cargoMechanism = new CargoMechanism();
+      cargoMechanism.initialize();
+    }
+
     public void updatePresetPaths() {
-      reverseAuto = MechanismsGamepad.Left_Bumper_State;
-      if (MechanismsGamepad.A_Button_State) {
+      reverseAuto = ChassisGamepad.Left_Bumper_State;
+      if (ChassisGamepad.A_Button_State) {
         currentPath = onGoingPath.nearCargo;
       }
-      else if (MechanismsGamepad.B_Button_State) {
+      else if (ChassisGamepad.B_Button_State) {
         currentPath = onGoingPath.middleCargo;
       }
-      else if (MechanismsGamepad.X_Button_State) {
+      else if (ChassisGamepad.X_Button_State) {
         currentPath = onGoingPath.rocketShip;
       }
-      else if (MechanismsGamepad.Y_Button_State) {
+      else if (ChassisGamepad.Y_Button_State) {
         currentPath = onGoingPath.farCargo;
       }
     }
@@ -416,5 +424,36 @@ public class Robot extends TimedRobot {
           currentPath = null;
         }
       }
-     }
+    }
+
+    public void runCargoMechanism() {
+      if(MechanismsGamepad.A_Button_State) {
+        currentCargoMechanism = activeCargoMechanism.lowCargoPickup;
+        currentCargoMechanism.isActive = true;
+      }
+      if(MechanismsGamepad.B_Button_State) {
+        currentCargoMechanism = activeCargoMechanism.highCargoShoot;
+        currentCargoMechanism.isActive = true;
+      }
+      if(MechanismsGamepad.X_Button_State) {
+        currentCargoMechanism = activeCargoMechanism.lowCargoShoot;
+        currentCargoMechanism.isActive = true;
+      }
+      if(MechanismsGamepad.Y_Button_State) {
+        currentCargoMechanism = activeCargoMechanism.highCargoPickup;
+        currentCargoMechanism.isActive = true;
+      }
+      if(currentCargoMechanism == activeCargoMechanism.lowCargoPickup && currentCargoMechanism.isActive) {
+        currentCargoMechanism.isActive = cargoMechanism.lowCargoPickup();
+      }
+      if(currentCargoMechanism == activeCargoMechanism.highCargoPickup && currentCargoMechanism.isActive) {
+        currentCargoMechanism.isActive = cargoMechanism.highCargoPickup();
+      }
+      if(currentCargoMechanism == activeCargoMechanism.lowCargoShoot && currentCargoMechanism.isActive) {
+        currentCargoMechanism.isActive = cargoMechanism.lowCargoShoot();
+      }
+      if(currentCargoMechanism == activeCargoMechanism.highCargoShoot && currentCargoMechanism.isActive) {
+        currentCargoMechanism.isActive = cargoMechanism.highCargoShoot();
+      }
+    }
    }

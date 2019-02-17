@@ -11,12 +11,15 @@ public class Statics {
     public static int Low_Cargo_CAN_ID = 0;
     public static int High_Cargo_CAN_ID = 0;
 
-    public static int Front_Over_Roller_CAN_ID = 0;
+    public static int Over_Roller_1_CAN_ID = 4;
+    public static int Over_Roller_2_CAN_ID = 3;
 
     public static int Left_Ultrasonic_PingChannel = 0;
     public static int Left_Ultrasonic_EchoChannel = 1;
     public static int Right_Ultrasonic_PingChannel = 2;
     public static int Right_Ultrasonic_EchoChannel = 3;
+    public static int Cargo_Ultrasonic_PingChannel = 4;
+    public static int Cargo_Ultrasonic_EchoChannel = 5;
 
     public static int LIDAR_Sensor_Channel = 4;
 
@@ -30,5 +33,10 @@ public class Statics {
 
     public final static double LIDAR_CALIBRATION_OFFSET = -18; //TODO figure out what this value is or if we need it at all.
 
-    public final static double CM_TO_IN = 0.393701;    
+    public final static double CM_TO_IN = 0.393701;
+    
+    public static double Low_Cargo_Motor_Speed = .5;
+    public static double High_Cargo_Motor_Speed = .5;
+    public static double Over_Roller_1_Motor_Speed = .5;
+    public static double Over_Roller_2_Motor_Speed = .5;
 }
