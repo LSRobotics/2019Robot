@@ -48,8 +48,8 @@ public class Statics {
     public static int Gorgon_Solenoid_Forward_Channel = 2;
     public static int Gorgon_Solenoid_Reverse_Channel = 4;
 
-    public static int left_Climb_CAN_ID = 15;
-    public static int right_Climb_CAN_ID = 14;
+    public static int Scooter_Climb_CAN_ID = 14;
+    public static int Climb_Wheels_CAN_ID = 15;
     public static int Robot_Climb_Solenoid_Forward_Channel = 2;
     public static int Robot_Climb_Solenoid_Reverse_Channel = 4;
 }
