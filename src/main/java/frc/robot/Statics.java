@@ -11,8 +11,9 @@ public class Statics {
     public static int Low_Cargo_CAN_ID = 0;
     public static int High_Cargo_CAN_ID = 0;
 
-    public static int Over_Roller_1_CAN_ID = 4;
-    public static int Over_Roller_2_CAN_ID = 3;
+    public static int Left_Over_Roller_CAN_ID = 4;
+    public static int Right_Over_Roller_CAN_ID = 3;
+    public static int Front_Over_Roller_CAN_ID = 6;
 
     public static int Left_Ultrasonic_PingChannel = 0;
     public static int Left_Ultrasonic_EchoChannel = 1;
@@ -37,6 +38,18 @@ public class Statics {
     
     public static double Low_Cargo_Motor_Speed = .5;
     public static double High_Cargo_Motor_Speed = .5;
-    public static double Over_Roller_1_Motor_Speed = .5;
-    public static double Over_Roller_2_Motor_Speed = .5;
+    public static double Left_Over_Roller_Motor_Speed = .5;
+    public static double Right_Over_Roller_Motor_Speed = .5;
+    public static double Front_Over_Rollor_Motor_Speed = .5;
+
+    public static int left_Over_Roller_Encoder_A_Channel = 0;
+    public static int left_Over_Roller_Encoder_B_Channel = 1;
+
+    public static int Gorgon_Solenoid_Forward_Channel = 2;
+    public static int Gorgon_Solenoid_Reverse_Channel = 4;
+
+    public static int left_Climb_CAN_ID = 15;
+    public static int right_Climb_CAN_ID = 14;
+    public static int Robot_Climb_Solenoid_Forward_Channel = 2;
+    public static int Robot_Climb_Solenoid_Reverse_Channel = 4;
 }
