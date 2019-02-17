@@ -426,7 +426,7 @@ public class Robot extends TimedRobot {
       }
     }
 
-    public void runCargoMechanism() {
+    public void updateCargoMechanism() {
       if(MechanismsGamepad.A_Button_State) {
         currentCargoMechanism = activeCargoMechanism.lowCargoPickup;
         currentCargoMechanism.isActive = true;
