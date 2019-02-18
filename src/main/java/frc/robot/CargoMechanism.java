@@ -18,7 +18,7 @@ public class CargoMechanism {
     }
 
     public boolean lowCargoPickup() {
-        if(ultrasonicSensor.getRangeInches() > 6) {
+        if(ultrasonicSensor.getRangeInches() > Statics.Cargo_Hold_Distance) {
             lowCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
             frontOverRollerMotorController.set(-Statics.Front_Over_Rollor_Motor_Speed);
             return true;
@@ -31,7 +31,7 @@ public class CargoMechanism {
     }
 
     public boolean highCargoPickup() {
-        if(ultrasonicSensor.getRangeInches() > 6) {
+        if(ultrasonicSensor.getRangeInches() > Statics.Cargo_Hold_Distance) {
             highCargoMotorController.set(-Statics.High_Cargo_Motor_Speed);
             frontOverRollerMotorController.set(-Statics.Front_Over_Rollor_Motor_Speed);
             return true;
@@ -44,7 +44,7 @@ public class CargoMechanism {
     }
 
     public boolean lowCargoShoot() {
-        if(ultrasonicSensor.getRangeInches() < 6) {
+        if(ultrasonicSensor.getRangeInches() < Statics.Cargo_Hold_Distance) {
             lowCargoMotorController.set(Statics.Low_Cargo_Motor_Speed);
             frontOverRollerMotorController.set(-Statics.Front_Over_Rollor_Motor_Speed);
             return true;
@@ -57,7 +57,7 @@ public class CargoMechanism {
     }
 
     public boolean highCargoShoot() {
-        if(ultrasonicSensor.getRangeInches() < 6) {
+        if(ultrasonicSensor.getRangeInches() < Statics.Cargo_Hold_Distance) {
             lowCargoMotorController.set(Statics.Low_Cargo_Motor_Speed);
             highCargoMotorController.set(Statics.High_Cargo_Motor_Speed);
             return true;

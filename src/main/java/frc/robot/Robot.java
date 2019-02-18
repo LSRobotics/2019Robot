@@ -64,6 +64,7 @@ public class Robot extends TimedRobot {
   public UltrasonicPIDController ultrasonicPIDController;
   public static double leftUltrasonicDistance;
   public static double rightUltrasonicDistance;
+  public static double cargoUltrasonicDistance;
 
   public static LIDARSensor mLIDARSensor;
   public LIDARPIDController lidarpidController;
@@ -105,6 +106,12 @@ public class Robot extends TimedRobot {
     initializeGyroPIDController();
     initializeUltrasonicSensor();
     initializeLIDARSensor();
+    initializeLIDARPID();
+    initializeCargoMechanism();
+    initializeClimb();
+    initializeGorgon();
+    initializePixyCam();
+    initializeUltrasonicPIDController();
 
   }
 
@@ -159,10 +166,16 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     updateSensors();
     updateButtonStates();
-    updateRobotTurnDegree();
+    updateTargetAngle();
+    if (currentPath == null) {
+      updatePresetPaths();
+    }
+    updateGorgon();
+    updateCargoMechanism();
+    updateClimb();
+    updateOverRoller();
     updateMove();
     updateSmartDashboard();
-    if (currentPath == null) updatePresetPaths();
   }
 
   /**
@@ -182,6 +195,9 @@ public class Robot extends TimedRobot {
         gyroPIDController.calculate();
         mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
       }
+    }
+    else if(currentPath != null) {
+      runPresetPaths();
     }
     else {
       updateDrive();
@@ -226,13 +242,17 @@ public class Robot extends TimedRobot {
 
   public void updateButtonStates() {
     ChassisGamepad.putButtonStates();
-    if(ChassisGamepad.Right_Bumper_State) reverseDrive = !reverseDrive;
+    MechanismsGamepad.putButtonStates();
+    if(ChassisGamepad.Right_Bumper_State) {
+      reverseDrive = !reverseDrive;
+    }
   }
 
   public void updateSensors() {
     gyroAngle = mGyroSensor.getAngle();
     leftUltrasonicDistance = mLeftUltrasonicSensor.getRangeInches();
     rightUltrasonicDistance = mRightUltrasonicSensor.getRangeInches();
+    cargoUltrasonicDistance = cargoMechanism.ultrasonicSensor.getRangeInches();
     lidarDistance = mLIDARSensor.getDistance();
   }
 
@@ -262,7 +282,7 @@ public class Robot extends TimedRobot {
     mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
   }
 
-  public void updateRobotTurnDegree() {
+  public void updateTargetAngle() {
     if(ChassisGamepad.DPAD_State != -1) {
       TargetAngle = ChassisGamepad.DPAD_State;
       gyroPIDController.setSetpoint(TargetAngle);
