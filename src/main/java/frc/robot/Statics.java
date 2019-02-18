@@ -52,4 +52,7 @@ public class Statics {
     public static int Climb_Wheels_CAN_ID = 15;
     public static int Robot_Climb_Solenoid_Forward_Channel = 2;
     public static int Robot_Climb_Solenoid_Reverse_Channel = 4;
+
+    public static int Limit_Switch_Channel = 8;
+    public static double Cargo_Hold_Distance = 6;
 }

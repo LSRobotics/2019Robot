@@ -7,7 +7,8 @@ public class OverRoller {
 
     WPI_TalonSRX leftOverRollerMotorController;
     WPI_TalonSRX rightOverRollerMotorController;
-    TalonSRXPIDSetConfiguration pidConfig;
+    TalonSRXPIDSetConfiguration leftpidConfig;
+    TalonSRXPIDSetConfiguration rightpidConfig;
     
     public void initialize() {
         leftOverRollerMotorController = new WPI_TalonSRX(Statics.Left_Over_Roller_CAN_ID);
@@ -15,18 +16,21 @@ public class OverRoller {
         
         leftOverRollerMotorController.configFactoryDefault();
         rightOverRollerMotorController.configFactoryDefault();
-        rightOverRollerMotorController.follow(leftOverRollerMotorController);
 
-        pidConfig = new TalonSRXPIDSetConfiguration();
-        leftOverRollerMotorController.configurePID(pidConfig, 0, 30, true);
+        rightpidConfig = new TalonSRXPIDSetConfiguration();
+        leftpidConfig = new TalonSRXPIDSetConfiguration();
+        leftOverRollerMotorController.configurePID(leftpidConfig, 0, 30, true);
+        rightOverRollerMotorController.configurePID(rightpidConfig, 0, 30, true); //TODO tune
     }
 
     public void lowerArms() {
-        leftOverRollerMotorController.set(ControlMode.Position, 4096/4); //TODO figure out encoder value.
+        rightOverRollerMotorController.set(ControlMode.Position, 4096/4);
+        leftOverRollerMotorController.set(ControlMode.Position, -4096/4); //TODO figure out encoder value.
     }
 
     public void raiseArms() {
         leftOverRollerMotorController.set(ControlMode.Position, 0);
+        rightOverRollerMotorController.set(ControlMode.Position, 0);
     }
 
 }

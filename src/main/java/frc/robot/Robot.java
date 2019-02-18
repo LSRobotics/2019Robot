@@ -18,13 +18,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 
-
-//TODO Ultrasonic paths
-//TODO controls
-//TODO Switch to Navx
-//TODO Second Gamepad
 //TODO Lights
-//TODO SmartDashboard Design
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -85,6 +79,15 @@ public class Robot extends TimedRobot {
   public activeCargoMechanism currentCargoMechanism = null;
   public static CargoMechanism cargoMechanism;
 
+  public static OverRoller overRoller;
+
+  public static Gorgon gorgon;
+
+  public static RobotClimb climb;
+  public static DigitalInput limitSwitch;
+
+  // TODO Put custom auto code here
+
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -142,7 +145,6 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {
     switch (m_autoSelected) {
       case kAuto1:
-        // TODO Put custom auto code here
         break;
       case kAuto2:
       default:
@@ -301,6 +303,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Calculated Ultrasonic PID Controller Output Value", ultrasonicPIDController.get());
     SmartDashboard.putNumber("Left Ultrasonic Distance in inches", leftUltrasonicDistance);
     SmartDashboard.putNumber("Right Ultrasonic Distance in inches", rightUltrasonicDistance);
+    SmartDashboard.putBoolean("Cargo in Place", cargoMechanism.ultrasonicSensor.getRangeInches() < Statics.Cargo_Hold_Distance);
     SmartDashboard.putBoolean("Validity of Left Ultrasonic Range", mLeftUltrasonicSensor.isRangeValid());
     SmartDashboard.putBoolean("Validity of Right Ultrasonic Range", mRightUltrasonicSensor.isRangeValid());
     } 
@@ -309,7 +312,7 @@ public class Robot extends TimedRobot {
 
       public void pidWrite(double output) {
         mLeftSpeed = output;
-        mRightSpeed = -output; //TODO check this
+        mRightSpeed = -output; 
       }
     }
 
@@ -454,6 +457,52 @@ public class Robot extends TimedRobot {
       }
       if(currentCargoMechanism == activeCargoMechanism.highCargoShoot && currentCargoMechanism.isActive) {
         currentCargoMechanism.isActive = cargoMechanism.highCargoShoot();
+      }
+    }
+
+    public void initializeOverRoller() {
+      overRoller = new OverRoller();
+      overRoller.initialize();
+    }
+
+    public void updateOverRoller() {
+      if(MechanismsGamepad.DPAD_State == 0) {
+        overRoller.raiseArms();
+      }
+      if(MechanismsGamepad.DPAD_State == 180) {
+        overRoller.lowerArms();
+      }
+    }
+
+    public void initializeGorgon() {
+      gorgon = new Gorgon();
+      gorgon.initialize();
+    }
+
+    public void updateGorgon() {
+      if(MechanismsGamepad.DPAD_State == 90) {
+        gorgon.openGorgon();
+      }
+      if(MechanismsGamepad.DPAD_State == 270) {
+        gorgon.closeGorgon();
+      }
+    }
+
+    public void initializeClimb() {
+      climb = new RobotClimb();
+      climb.initialize();
+      limitSwitch = new DigitalInput(Statics.Limit_Switch_Channel);
+    }
+
+    public void updateClimb() {
+      if(MechanismsGamepad.Right_Stick_Down_State) {
+        climb.runClimb(limitSwitch.get());
+      }
+      if(MechanismsGamepad.Right_Bumper_State) {
+        climb.runScooter();
+      }
+      if(MechanismsGamepad.Left_Bumper_State) {
+        climb.openPenumatics();
       }
     }
    }
