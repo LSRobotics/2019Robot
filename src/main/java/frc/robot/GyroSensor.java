@@ -1,23 +1,23 @@
 package frc.robot;
 
-import com.kauailabs.navx.frc.AHRS;
-import edu.wpi.first.wpilibj.SerialPort;
+import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import edu.wpi.first.wpilibj.SPI;
 
 public class GyroSensor {
     
-    public static AHRS GyroSensor;
+    public static ADXRS450_Gyro GyroSensor;
 
     public void initializeGyroSensor() {
-        GyroSensor = new AHRS(SerialPort.Port.kMXP);
+        GyroSensor = new ADXRS450_Gyro(SPI.Port.kOnboardCS0);
         GyroSensor.reset();
-        GyroSensor.zeroYaw();
+        GyroSensor.calibrate();
     }
 
     public double getAngle() {
         return GyroSensor.getAngle();
     }
 
-    public AHRS getActualGyroSensor() {
+    public ADXRS450_Gyro getActualGyroSensor() {
         return GyroSensor;
     }
 }

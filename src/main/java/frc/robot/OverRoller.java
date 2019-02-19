@@ -24,8 +24,8 @@ public class OverRoller {
     }
 
     public void lowerArms() {
-        rightOverRollerMotorController.set(ControlMode.Position, 4096/4);
-        leftOverRollerMotorController.set(ControlMode.Position, -4096/4); //TODO figure out encoder value.
+        rightOverRollerMotorController.set(ControlMode.Position, 4096);
+        leftOverRollerMotorController.set(ControlMode.Position, -4096); //TODO figure out encoder value.
     }
 
     public void raiseArms() {

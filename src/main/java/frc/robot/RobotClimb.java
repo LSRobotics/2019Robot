@@ -31,7 +31,7 @@ public class RobotClimb {
 
     public void runScooter() {
         if (scooterMotorController.get() == 0) {
-            scooterMotorController.set(1);
+            scooterMotorController.set(-.1);
         }
         else {
             scooterMotorController.set(0);

@@ -4,10 +4,10 @@ import edu.wpi.first.wpilibj.Ultrasonic;
 
 public class UltrasonicSensor {
 
-    public static Ultrasonic ultrasonicSensor;
+    public Ultrasonic ultrasonicSensor;
 
-    public UltrasonicSensor(int pingChannel, int echoChannel) {
-        ultrasonicSensor = new Ultrasonic(pingChannel, echoChannel);
+    public UltrasonicSensor(int PingChannel, int EchoChannel) {
+        ultrasonicSensor = new Ultrasonic(PingChannel, EchoChannel);
         //initialization occurs within the constructor for this class
         ultrasonicSensor.setAutomaticMode(true);
         ultrasonicSensor.setDistanceUnits(Ultrasonic.Unit.kInches);

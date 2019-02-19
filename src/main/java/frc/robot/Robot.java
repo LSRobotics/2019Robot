@@ -15,9 +15,17 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-
 import edu.wpi.first.wpilibj.DigitalInput;
 
+//TODO updateCargoMechanism
+//TODO Climb-Penumatics
+//TODO Climb-Move uppy thingy
+//TODO configure Gyro PID
+//TODO make Gorgon
+//TODO configure PID and Preset heights for OverRoller
+//TODO make sure press button but not hold button
+//TODO make Ultra and LIDAR sensors work
+//TODO test preset paths
 //TODO Lights
 
 /**
@@ -112,6 +120,7 @@ public class Robot extends TimedRobot {
     initializeGorgon();
     initializePixyCam();
     initializeUltrasonicPIDController();
+    initializeOverRoller();
 
   }
 
@@ -251,9 +260,9 @@ public class Robot extends TimedRobot {
   public void updateSensors() {
     gyroAngle = mGyroSensor.getAngle();
     leftUltrasonicDistance = mLeftUltrasonicSensor.getRangeInches();
-    rightUltrasonicDistance = mRightUltrasonicSensor.getRangeInches();
-    cargoUltrasonicDistance = cargoMechanism.ultrasonicSensor.getRangeInches();
-    lidarDistance = mLIDARSensor.getDistance();
+    // rightUltrasonicDistance = mRightUltrasonicSensor.getRangeInches();
+    // cargoUltrasonicDistance = cargoMechanism.ultrasonicSensor.getRangeInches();
+    // lidarDistance = mLIDARSensor.getDistance();
   }
 
   //else contains true tank drive
@@ -265,6 +274,7 @@ public class Robot extends TimedRobot {
         mRightSpeed = mLeftSpeed;
       }
       else if (mRightSpeed > mLeftSpeed) {
+        mRightSpeed = -mRightSpeed;
         mLeftSpeed = mRightSpeed;
       }
     }
@@ -279,7 +289,7 @@ public class Robot extends TimedRobot {
       mLeftSpeed = -mLeftSpeed;
       mRightSpeed = -mRightSpeed;
     } 
-    mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
+    mDifferentialDrive.tankDrive(-mLeftSpeed/2, -mRightSpeed/2);
   }
 
   public void updateTargetAngle() {
@@ -301,6 +311,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Chassis Controller Y Button State", ChassisGamepad.Y_Button_State);
     SmartDashboard.putBoolean("Chassis Controller Left Bumper State", ChassisGamepad.Left_Bumper_State);
     SmartDashboard.putBoolean("Chassis Controller Right Bumper State", ChassisGamepad.Right_Bumper_State);
+    SmartDashboard.putNumber("Chassis Controller D-PAD", ChassisGamepad.DPAD_State);
 
     //all Mechanism Gamepad Values
     SmartDashboard.putNumber("Mechanisms Controller Left Trigger Axis State", MechanismsGamepad.Left_Trigger_Axis_State);
@@ -313,6 +324,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Mechanisms Controller Y Button State", MechanismsGamepad.Y_Button_State);
     SmartDashboard.putBoolean("Mechanisms Controller Left Bumper State", MechanismsGamepad.Left_Bumper_State);
     SmartDashboard.putBoolean("Mechanisms Controller Right Bumper State", MechanismsGamepad.Right_Bumper_State);
+    SmartDashboard.putNumber("Mechanism Controller D-PAD", MechanismsGamepad.DPAD_State);
 
     //all other values
     SmartDashboard.putNumber("Currrent Target Angle in Degrees", TargetAngle);
@@ -322,10 +334,10 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Calculated Gyro PID Controller Output Value", gyroPIDController.get());
     SmartDashboard.putNumber("Calculated Ultrasonic PID Controller Output Value", ultrasonicPIDController.get());
     SmartDashboard.putNumber("Left Ultrasonic Distance in inches", leftUltrasonicDistance);
-    SmartDashboard.putNumber("Right Ultrasonic Distance in inches", rightUltrasonicDistance);
-    SmartDashboard.putBoolean("Cargo in Place", cargoMechanism.ultrasonicSensor.getRangeInches() < Statics.Cargo_Hold_Distance);
+    // SmartDashboard.putNumber("Right Ultrasonic Distance in inches", rightUltrasonicDistance);
+    // SmartDashboard.putBoolean("Cargo in Place", cargoMechanism.ultrasonicSensor.getRangeInches() < Statics.Cargo_Hold_Distance);
     SmartDashboard.putBoolean("Validity of Left Ultrasonic Range", mLeftUltrasonicSensor.isRangeValid());
-    SmartDashboard.putBoolean("Validity of Right Ultrasonic Range", mRightUltrasonicSensor.isRangeValid());
+    // SmartDashboard.putBoolean("Validity of Right Ultrasonic Range", mRightUltrasonicSensor.isRangeValid());
     } 
 
     private class gyroPIDOutput implements PIDOutput {
@@ -344,7 +356,7 @@ public class Robot extends TimedRobot {
 
     public void initializeUltrasonicSensor() {
       mLeftUltrasonicSensor = new UltrasonicSensor(Statics.Left_Ultrasonic_PingChannel, Statics.Left_Ultrasonic_EchoChannel);
-      mRightUltrasonicSensor = new UltrasonicSensor(Statics.Right_Ultrasonic_PingChannel, Statics.Right_Ultrasonic_EchoChannel);
+      // mRightUltrasonicSensor = new UltrasonicSensor(Statics.Right_Ultrasonic_PingChannel, Statics.Right_Ultrasonic_EchoChannel);
     }
 
     private class UltrasonicPIDOutput implements PIDOutput {
@@ -363,12 +375,12 @@ public class Robot extends TimedRobot {
 
     public void initializeLIDARSensor() {
       mLIDARSensor = new LIDARSensor(new DigitalInput(Statics.LIDAR_Sensor_Channel));
-      lidarpidController.setPercentTolerance(1);
-      lidarpidController.enable();
     } 
 
     public void initializeLIDARPID() {
       lidarpidController = new LIDARPIDController(.1, 0, 0, 0, mLIDARSensor, new LIDARPIDOutput());
+      lidarpidController.setPercentTolerance(1);
+      lidarpidController.enable();
     }
 
     private class LIDARPIDOutput implements PIDOutput {

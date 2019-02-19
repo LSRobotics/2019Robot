@@ -8,7 +8,7 @@ public class Gamepad {
     //port that is given to xbox controller object
     public static int mGamepadPortNumber;
 
-    private static XboxController mXboxController;
+    private XboxController mXboxController;
 
     //boolean states of buttons that can be called in the robot class to be used as needed..
     public boolean A_Button_State = false;

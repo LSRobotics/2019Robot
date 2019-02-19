@@ -3,17 +3,17 @@ package frc.robot;
 public class Statics {
     
     public static int Front_Left_CAN_ID = 10;
-    public static int Rear_Left_CAN_ID = 7;
+    public static int Rear_Left_CAN_ID = 11;
 
-    public static int Front_Right_CAN_ID = 9;
-    public static int Rear_Right_CAN_ID = 8;
+    public static int Front_Right_CAN_ID = 6;
+    public static int Rear_Right_CAN_ID = 7;
 
-    public static int Low_Cargo_CAN_ID = 0;
-    public static int High_Cargo_CAN_ID = 0;
+    public static int Low_Cargo_CAN_ID = 8;
+    public static int High_Cargo_CAN_ID = 9;
 
     public static int Left_Over_Roller_CAN_ID = 4;
     public static int Right_Over_Roller_CAN_ID = 3;
-    public static int Front_Over_Roller_CAN_ID = 6;
+    public static int Front_Over_Roller_CAN_ID = 5;
 
     public static int Left_Ultrasonic_PingChannel = 0;
     public static int Left_Ultrasonic_EchoChannel = 1;
@@ -22,12 +22,12 @@ public class Statics {
     public static int Cargo_Ultrasonic_PingChannel = 4;
     public static int Cargo_Ultrasonic_EchoChannel = 5;
 
-    public static int LIDAR_Sensor_Channel = 4;
+    public static int LIDAR_Sensor_Channel = 6;
 
     public final static double PID_GYRO_TOLERANCE = 2;
-    public final static double GYRO_P = .1;
+    public final static double GYRO_P = .25;
     public final static double GYRO_I = 0;
-    public final static double GYRO_D = 0;
+    public final static double GYRO_D = .15;
     public final static double GYRO_F = 0;
 
     public final static double GAMEPAD_AXIS_TOLERANCE = 0.1;
@@ -45,13 +45,13 @@ public class Statics {
     public static int left_Over_Roller_Encoder_A_Channel = 0;
     public static int left_Over_Roller_Encoder_B_Channel = 1;
 
-    public static int Gorgon_Solenoid_Forward_Channel = 2;
-    public static int Gorgon_Solenoid_Reverse_Channel = 4;
+    public static int Gorgon_Solenoid_Forward_Channel = 0;
+    public static int Gorgon_Solenoid_Reverse_Channel = 1;
 
-    public static int Scooter_Climb_CAN_ID = 14;
-    public static int Climb_Wheels_CAN_ID = 15;
+    public static int Scooter_Climb_CAN_ID = 1;
+    public static int Climb_Wheels_CAN_ID = 2;
     public static int Robot_Climb_Solenoid_Forward_Channel = 2;
-    public static int Robot_Climb_Solenoid_Reverse_Channel = 4;
+    public static int Robot_Climb_Solenoid_Reverse_Channel = 3;
 
     public static int Limit_Switch_Channel = 8;
     public static double Cargo_Hold_Distance = 6;
