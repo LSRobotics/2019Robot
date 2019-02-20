@@ -43,12 +43,12 @@ public class Gamepad {
     }
 
     public void putGamepadButtonStates() {
-        A_Button_State = mXboxController.getAButton();
-        B_Button_State = mXboxController.getBButton();
-        X_Button_State = mXboxController.getXButton();
-        Y_Button_State = mXboxController.getYButton();
-        Left_Bumper_State = mXboxController.getBumper(Hand.kLeft);
-        Right_Bumper_State = mXboxController.getBumper(Hand.kRight);
+        A_Button_State = mXboxController.getAButtonPressed();
+        B_Button_State = mXboxController.getBButtonPressed();
+        X_Button_State = mXboxController.getXButtonPressed();
+        Y_Button_State = mXboxController.getYButtonPressed();
+        Left_Bumper_State = mXboxController.getBumperPressed(Hand.kLeft);
+        Right_Bumper_State = mXboxController.getBumperPressed(Hand.kRight);
         Right_Stick_Down_State = mXboxController.getStickButton(Hand.kRight);
     }
 

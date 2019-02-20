@@ -17,15 +17,13 @@ import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.DigitalInput;
 
-//TODO updateCargoMechanism
-//TODO Climb-Penumatics
-//TODO Climb-Move uppy thingy
-//TODO configure Gyro PID
-//TODO make Gorgon
-//TODO configure PID and Preset heights for OverRoller
-//TODO make sure press button but not hold button
-//TODO make Ultra and LIDAR sensors work
-//TODO test preset paths
+//TODO added cancel button for preset paths, gyro
+//TODO updateCargoMechanism                            -nick
+//TODO Climb-Move uppy thingy                          -craig
+//TODO configure Gyro PID                              -both
+//TODO configure PID and Preset heights for OverRoller -craig
+//TODO make Ultra and LIDAR sensors work               -nick
+//TODO test preset paths                               -both
 //TODO Lights
 
 /**
@@ -67,16 +65,18 @@ public class Robot extends TimedRobot {
   public static GyroSensor mGyroSensor;
   public GyroPIDController gyroPIDController;
 
-  public static UltrasonicSensor mLeftUltrasonicSensor;
-  public static UltrasonicSensor mRightUltrasonicSensor;
-  public UltrasonicPIDController ultrasonicPIDController;
-  public static double leftUltrasonicDistance;
-  public static double rightUltrasonicDistance;
+  public static CargoMode cargoMode = null;
+
+  // public static UltrasonicSensor mLeftUltrasonicSensor;
+  // public static UltrasonicSensor mRightUltrasonicSensor;
+  // public UltrasonicPIDController ultrasonicPIDController;
+  // public static double leftUltrasonicDistance;
+  // public static double rightUltrasonicDistance;
+
   public static double cargoUltrasonicDistance;
 
   public static LIDARSensor mLIDARSensor;
   public LIDARPIDController lidarpidController;
-
   public double lidarDistance;
 
   public static boolean reverseAuto = false;
@@ -85,7 +85,6 @@ public class Robot extends TimedRobot {
 
   public PixyCamera pixyCam;
 
-  public activeCargoMechanism currentCargoMechanism = null;
   public static CargoMechanism cargoMechanism;
 
   public static OverRoller overRoller;
@@ -112,14 +111,14 @@ public class Robot extends TimedRobot {
     initializeDifferentialDrive();
     initializeGyroSensor();
     initializeGyroPIDController();
-    initializeUltrasonicSensor();
+    //initializeUltrasonicSensor();
     initializeLIDARSensor();
     initializeLIDARPID();
     initializeCargoMechanism();
     initializeClimb();
     initializeGorgon();
     initializePixyCam();
-    initializeUltrasonicPIDController();
+    //initializeUltrasonicPIDController();
     initializeOverRoller();
 
   }
@@ -259,9 +258,9 @@ public class Robot extends TimedRobot {
 
   public void updateSensors() {
     gyroAngle = mGyroSensor.getAngle();
-    leftUltrasonicDistance = mLeftUltrasonicSensor.getRangeInches();
-    // rightUltrasonicDistance = mRightUltrasonicSensor.getRangeInches();
-    // cargoUltrasonicDistance = cargoMechanism.ultrasonicSensor.getRangeInches();
+    //leftUltrasonicDistance = mLeftUltrasonicSensor.getRangeInches();
+    //rightUltrasonicDistance = mRightUltrasonicSensor.getRangeInches();
+    cargoUltrasonicDistance = cargoMechanism.ultrasonicSensor.getRangeInches();
     // lidarDistance = mLIDARSensor.getDistance();
   }
 
@@ -288,7 +287,7 @@ public class Robot extends TimedRobot {
     if (reverseDrive) {
       mLeftSpeed = -mLeftSpeed;
       mRightSpeed = -mRightSpeed;
-    } 
+    }
     mDifferentialDrive.tankDrive(-mLeftSpeed/2, -mRightSpeed/2);
   }
 
@@ -331,13 +330,9 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Gyro Angle in Degrees", gyroAngle);
     SmartDashboard.putNumber("Left Tank Drive Speed", mLeftSpeed);
     SmartDashboard.putNumber("Right Tank Drive Speed", mRightSpeed);
-    SmartDashboard.putNumber("Calculated Gyro PID Controller Output Value", gyroPIDController.get());
-    SmartDashboard.putNumber("Calculated Ultrasonic PID Controller Output Value", ultrasonicPIDController.get());
-    SmartDashboard.putNumber("Left Ultrasonic Distance in inches", leftUltrasonicDistance);
-    // SmartDashboard.putNumber("Right Ultrasonic Distance in inches", rightUltrasonicDistance);
-    // SmartDashboard.putBoolean("Cargo in Place", cargoMechanism.ultrasonicSensor.getRangeInches() < Statics.Cargo_Hold_Distance);
-    SmartDashboard.putBoolean("Validity of Left Ultrasonic Range", mLeftUltrasonicSensor.isRangeValid());
-    // SmartDashboard.putBoolean("Validity of Right Ultrasonic Range", mRightUltrasonicSensor.isRangeValid());
+    SmartDashboard.putBoolean("Cargo in Place", cargoMechanism.ultrasonicSensor.getRangeInches() < Statics.Cargo_Hold_Distance);
+    SmartDashboard.putNumber("cargo sensor distance", cargoMechanism.ultrasonicSensor.getRangeInches());
+    SmartDashboard.putBoolean("cargo sensor valid", cargoMechanism.ultrasonicSensor.isRangeValid());
     } 
 
     private class gyroPIDOutput implements PIDOutput {
@@ -352,25 +347,6 @@ public class Robot extends TimedRobot {
       gyroPIDController = new GyroPIDController(Statics.GYRO_P, Statics.GYRO_I, Statics.GYRO_D, Statics.GYRO_F, mGyroSensor.getActualGyroSensor(), new gyroPIDOutput());
       gyroPIDController.setPercentTolerance(Statics.PID_GYRO_TOLERANCE);
       gyroPIDController.enable();
-    }
-
-    public void initializeUltrasonicSensor() {
-      mLeftUltrasonicSensor = new UltrasonicSensor(Statics.Left_Ultrasonic_PingChannel, Statics.Left_Ultrasonic_EchoChannel);
-      // mRightUltrasonicSensor = new UltrasonicSensor(Statics.Right_Ultrasonic_PingChannel, Statics.Right_Ultrasonic_EchoChannel);
-    }
-
-    private class UltrasonicPIDOutput implements PIDOutput {
-      
-      public void pidWrite(double output) {
-        mLeftSpeed = output;
-        mRightSpeed = -output;
-      }
-    }
-
-    public void initializeUltrasonicPIDController() {
-      ultrasonicPIDController = new UltrasonicPIDController(.1, 0, 0, 0, mLeftUltrasonicSensor.getActualSensor(), new UltrasonicPIDOutput());
-      ultrasonicPIDController.setPercentTolerance(2);
-      ultrasonicPIDController.enable();
     }
 
     public void initializeLIDARSensor() {
@@ -462,33 +438,23 @@ public class Robot extends TimedRobot {
     }
 
     public void updateCargoMechanism() {
-      if(MechanismsGamepad.A_Button_State) {
-        currentCargoMechanism = activeCargoMechanism.lowCargoPickup;
-        currentCargoMechanism.isActive = true;
+      if (cargoMode != null) {
+        cargoMechanism.runCargo();
       }
-      if(MechanismsGamepad.B_Button_State) {
-        currentCargoMechanism = activeCargoMechanism.highCargoShoot;
-        currentCargoMechanism.isActive = true;
+      else if(MechanismsGamepad.A_Button_State) {
+        cargoMode = CargoMode.LOWPICKUP;
       }
-      if(MechanismsGamepad.X_Button_State) {
-        currentCargoMechanism = activeCargoMechanism.lowCargoShoot;
-        currentCargoMechanism.isActive = true;
+      else if(MechanismsGamepad.B_Button_State) {
+        cargoMode = CargoMode.HIGHSHOOT;
       }
-      if(MechanismsGamepad.Y_Button_State) {
-        currentCargoMechanism = activeCargoMechanism.highCargoPickup;
-        currentCargoMechanism.isActive = true;
+      else if(MechanismsGamepad.X_Button_State) {
+        cargoMode = CargoMode.LOWSHOOT;
       }
-      if(currentCargoMechanism == activeCargoMechanism.lowCargoPickup && currentCargoMechanism.isActive) {
-        currentCargoMechanism.isActive = cargoMechanism.lowCargoPickup();
+      else if(MechanismsGamepad.Y_Button_State) {
+        cargoMode = CargoMode.HIGHPICKUP;
       }
-      if(currentCargoMechanism == activeCargoMechanism.highCargoPickup && currentCargoMechanism.isActive) {
-        currentCargoMechanism.isActive = cargoMechanism.highCargoPickup();
-      }
-      if(currentCargoMechanism == activeCargoMechanism.lowCargoShoot && currentCargoMechanism.isActive) {
-        currentCargoMechanism.isActive = cargoMechanism.lowCargoShoot();
-      }
-      if(currentCargoMechanism == activeCargoMechanism.highCargoShoot && currentCargoMechanism.isActive) {
-        currentCargoMechanism.isActive = cargoMechanism.highCargoShoot();
+      else {
+        cargoMechanism.stopCargo();
       }
     }
 
@@ -501,8 +467,11 @@ public class Robot extends TimedRobot {
       if(MechanismsGamepad.DPAD_State == 0) {
         overRoller.raiseArms();
       }
-      if(MechanismsGamepad.DPAD_State == 180) {
+      else if(MechanismsGamepad.DPAD_State == 180) {
         overRoller.lowerArms();
+      }
+      else {
+        overRoller.stopArms();
       }
     }
 
@@ -527,14 +496,36 @@ public class Robot extends TimedRobot {
     }
 
     public void updateClimb() {
-      if(MechanismsGamepad.Right_Stick_Down_State) {
-        climb.runClimb(limitSwitch.get());
-      }
-      if(MechanismsGamepad.Right_Bumper_State) {
-        climb.runScooter();
-      }
+      climb.runClimb(MechanismsGamepad.Right_Trigger_Axis_State > .01, false); //TODO put actualy limitswitch
+      climb.runScooter(MechanismsGamepad.Right_Bumper_State);
       if(MechanismsGamepad.Left_Bumper_State) {
         climb.openPenumatics();
       }
     }
+
+    // public void initializeUltrasonicSensor() {
+    //   mLeftUltrasonicSensor = new UltrasonicSensor(Statics.Left_Ultrasonic_PingChannel, Statics.Left_Ultrasonic_EchoChannel);
+    //   mLeftUltrasonicSensor.startAutomaticMode();
+    //   mRightUltrasonicSensor = new UltrasonicSensor(Statics.Right_Ultrasonic_PingChannel, Statics.Right_Ultrasonic_EchoChannel);
+    // }
+
+    // private class UltrasonicPIDOutput implements PIDOutput {
+      
+    //   public void pidWrite(double output) {
+    //     mLeftSpeed = output;
+    //     mRightSpeed = -output;
+    //   }
+    // }
+
+    // public void initializeUltrasonicPIDController() {
+    //   ultrasonicPIDController = new UltrasonicPIDController(.1, 0, 0, 0, mLeftUltrasonicSensor.getActualSensor(), new UltrasonicPIDOutput());
+    //   ultrasonicPIDController.setPercentTolerance(2);
+    //   ultrasonicPIDController.enable();
+    // }
+
+    //SmartDashboard.putNumber("Left Ultrasonic Distance in inches", leftUltrasonicDistance);
+    //SmartDashboard.putNumber("Right Ultrasonic Distance in inches", mRightUltrasonicSensor.getRangeInches());
+    //SmartDashboard.putBoolean("Validity of Left Ultrasonic Range", mLeftUltrasonicSensor.isRangeValid());
+    //SmartDashboard.putBoolean("Validity of Right Ultrasonic Range", mRightUltrasonicSensor.isRangeValid());
+    //SmartDashboard.putNumber("Calculated Ultrasonic PID Controller Output Value", ultrasonicPIDController.get());
    }
