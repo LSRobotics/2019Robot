@@ -112,7 +112,7 @@ public class Robot extends TimedRobot {
     initializeGyroSensor();
     initializeGyroPIDController();
     //initializeUltrasonicSensor();
-    initializeLIDARSensor();
+    initializeLIDARSensor(); //TODO Test LIDAR because it wasn't tested before bag day.
     initializeLIDARPID();
     initializeCargoMechanism();
     initializeClimb();
@@ -324,7 +324,8 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Mechanisms Controller Left Bumper State", MechanismsGamepad.Left_Bumper_State);
     SmartDashboard.putBoolean("Mechanisms Controller Right Bumper State", MechanismsGamepad.Right_Bumper_State);
     SmartDashboard.putNumber("Mechanism Controller D-PAD", MechanismsGamepad.DPAD_State);
-
+    SmartDashboard.putNumber("Left Motor Amp output", overRoller.leftOverRollerMotorController.getOutputCurrent());
+    SmartDashboard.putNumber("Right Motor Amp output", overRoller.rightOverRollerMotorController.getOutputCurrent());
     //all other values
     SmartDashboard.putNumber("Currrent Target Angle in Degrees", TargetAngle);
     SmartDashboard.putNumber("Gyro Angle in Degrees", gyroAngle);
@@ -496,7 +497,7 @@ public class Robot extends TimedRobot {
     }
 
     public void updateClimb() {
-      climb.runClimb(MechanismsGamepad.Right_Trigger_Axis_State > .01, false); //TODO put actualy limitswitch
+      climb.runClimb(MechanismsGamepad.Right_Trigger_Axis_State > .01, !limitSwitch.get()); //!limit switch value is correct this is tested
       climb.runScooter(MechanismsGamepad.Right_Bumper_State);
       if(MechanismsGamepad.Left_Bumper_State) {
         climb.openPenumatics();

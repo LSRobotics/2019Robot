@@ -52,9 +52,9 @@ public class Statics {
     public final static double CM_TO_IN = 0.393701;
     
     public static double Low_Cargo_Motor_Speed = .5;
-    public static double High_Cargo_Motor_Speed = .5;
-    public static double Left_Over_Roller_Motor_Speed = .5;
-    public static double Right_Over_Roller_Motor_Speed = .5;
+    public static double High_Cargo_Motor_Speed = 1;
+    public static double Left_Over_Roller_Motor_Speed = 1;
+    public static double Right_Over_Roller_Motor_Speed = 1;
 
     public static double Cargo_Hold_Distance = 6;
 }

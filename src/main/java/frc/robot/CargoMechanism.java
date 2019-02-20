@@ -37,7 +37,7 @@ public class CargoMechanism {
 
     public void lowCargoPickup() {
         if(ultrasonicSensor.getRangeInches() > Statics.Cargo_Hold_Distance) {
-            lowCargoMotorController.set(Statics.Low_Cargo_Motor_Speed);
+            lowCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
         }
         else {
             Robot.cargoMode = null;
@@ -55,7 +55,7 @@ public class CargoMechanism {
 
     public void lowCargoShoot() {
         if(ultrasonicSensor.getRangeInches() < Statics.Cargo_Hold_Distance) {
-            lowCargoMotorController.set(Statics.Low_Cargo_Motor_Speed);
+            lowCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
             highCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
         }
         else {
@@ -63,10 +63,10 @@ public class CargoMechanism {
         }
     }
 
-    public void highCargoShoot() {
-        if(ultrasonicSensor.getRangeInches() < Statics.Cargo_Hold_Distance) {
-            lowCargoMotorController.set(Statics.Low_Cargo_Motor_Speed);
+    public void highCargoShoot() { //TODO bypass ultrasonic catch on cargo on the way out high shoot.
+        if(ultrasonicSensor.getRangeInches() < 3) {
             highCargoMotorController.set(Statics.High_Cargo_Motor_Speed);
+            lowCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
         }
         else {
             Robot.cargoMode = null;
