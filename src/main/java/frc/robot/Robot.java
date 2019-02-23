@@ -17,15 +17,6 @@ import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.DigitalInput;
 
-//TODO added cancel button for preset paths, gyro
-//TODO updateCargoMechanism                            -nick
-//TODO Climb-Move uppy thingy                          -craig
-//TODO configure Gyro PID                              -both
-//TODO configure PID and Preset heights for OverRoller -craig
-//TODO make Ultra and LIDAR sensors work               -nick
-//TODO test preset paths                               -both
-//TODO Lights
-
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the TimedRobot
@@ -33,6 +24,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
  * creating this project, you must also update the build.gradle file in the
  * project.
  */
+
 public class Robot extends TimedRobot {
   private static final String kAuto2 = "Auto 1";
   private static final String kAuto1 = "Auto 2";
@@ -94,8 +86,6 @@ public class Robot extends TimedRobot {
   public static RobotClimb climb;
   public static DigitalInput limitSwitch;
 
-  // TODO Put custom auto code here
-
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -120,7 +110,6 @@ public class Robot extends TimedRobot {
     initializePixyCam();
     //initializeUltrasonicPIDController();
     initializeOverRoller();
-
   }
 
   /**
@@ -288,7 +277,7 @@ public class Robot extends TimedRobot {
       mLeftSpeed = -mLeftSpeed;
       mRightSpeed = -mRightSpeed;
     }
-    mDifferentialDrive.tankDrive(-mLeftSpeed/2, -mRightSpeed/2);
+    mDifferentialDrive.tankDrive(-mLeftSpeed*Statics.SPEED_LIMIT, -mRightSpeed*Statics.SPEED_LIMIT);
   }
 
   public void updateTargetAngle() {
@@ -326,12 +315,13 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Mechanism Controller D-PAD", MechanismsGamepad.DPAD_State);
     SmartDashboard.putNumber("Left Motor Amp output", overRoller.leftOverRollerMotorController.getOutputCurrent());
     SmartDashboard.putNumber("Right Motor Amp output", overRoller.rightOverRollerMotorController.getOutputCurrent());
+    
     //all other values
     SmartDashboard.putNumber("Currrent Target Angle in Degrees", TargetAngle);
     SmartDashboard.putNumber("Gyro Angle in Degrees", gyroAngle);
     SmartDashboard.putNumber("Left Tank Drive Speed", mLeftSpeed);
     SmartDashboard.putNumber("Right Tank Drive Speed", mRightSpeed);
-    SmartDashboard.putBoolean("Cargo in Place", cargoMechanism.ultrasonicSensor.getRangeInches() < Statics.Cargo_Hold_Distance);
+    SmartDashboard.putBoolean("Cargo in Place", cargoMechanism.ultrasonicSensor.getRangeInches() < Statics.CARGO_HOLD_DISTANCE);
     SmartDashboard.putNumber("cargo sensor distance", cargoMechanism.ultrasonicSensor.getRangeInches());
     SmartDashboard.putBoolean("cargo sensor valid", cargoMechanism.ultrasonicSensor.isRangeValid());
     } 
@@ -355,7 +345,7 @@ public class Robot extends TimedRobot {
     } 
 
     public void initializeLIDARPID() {
-      lidarpidController = new LIDARPIDController(.1, 0, 0, 0, mLIDARSensor, new LIDARPIDOutput());
+      lidarpidController = new LIDARPIDController(.1, 0, 0, 0, mLIDARSensor, new LIDARPIDOutput()); //TODO make static
       lidarpidController.setPercentTolerance(1);
       lidarpidController.enable();
     }
@@ -444,15 +434,19 @@ public class Robot extends TimedRobot {
       }
       else if(MechanismsGamepad.A_Button_State) {
         cargoMode = CargoMode.LOWPICKUP;
+        cargoMechanism.runCargo();
       }
       else if(MechanismsGamepad.B_Button_State) {
         cargoMode = CargoMode.HIGHSHOOT;
+        cargoMechanism.runCargo();
       }
       else if(MechanismsGamepad.X_Button_State) {
         cargoMode = CargoMode.LOWSHOOT;
+        cargoMechanism.runCargo();
       }
       else if(MechanismsGamepad.Y_Button_State) {
         cargoMode = CargoMode.HIGHPICKUP;
+        cargoMechanism.runCargo();
       }
       else {
         cargoMechanism.stopCargo();
@@ -501,6 +495,9 @@ public class Robot extends TimedRobot {
       climb.runScooter(MechanismsGamepad.Right_Bumper_State);
       if(MechanismsGamepad.Left_Bumper_State) {
         climb.openPenumatics();
+      }
+      if(MechanismsGamepad.Left_Trigger_Axis_State > Statics.GAMEPAD_AXIS_TOLERANCE) {
+        climb.closePenumatics(); //TODO combine it to one button.
       }
     }
 

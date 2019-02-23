@@ -7,6 +7,8 @@ public class CargoMechanism {
     WPI_TalonSRX lowCargoMotorController; 
     WPI_TalonSRX highCargoMotorController;
 
+    int timer = 0;
+
     public UltrasonicSensor ultrasonicSensor;
 
     public void initialize() {
@@ -36,7 +38,7 @@ public class CargoMechanism {
     }
 
     public void lowCargoPickup() {
-        if(ultrasonicSensor.getRangeInches() > Statics.Cargo_Hold_Distance) {
+        if(ultrasonicSensor.getRangeInches() > Statics.CARGO_HOLD_DISTANCE) {
             lowCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
         }
         else {
@@ -45,7 +47,7 @@ public class CargoMechanism {
     }
 
     public void highCargoPickup() {
-        if(ultrasonicSensor.getRangeInches() > Statics.Cargo_Hold_Distance) {
+        if(ultrasonicSensor.getRangeInches() > Statics.CARGO_HOLD_DISTANCE) {
             highCargoMotorController.set(-Statics.High_Cargo_Motor_Speed);
         }
         else {
@@ -54,22 +56,34 @@ public class CargoMechanism {
     }
 
     public void lowCargoShoot() {
-        if(ultrasonicSensor.getRangeInches() < Statics.Cargo_Hold_Distance) {
-            lowCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
+        if(ultrasonicSensor.getRangeInches() < Statics.CARGO_HOLD_DISTANCE) {
+            lowCargoMotorController.set(-Statics.Low_Cargo_Shoot_Motor_Speed);
             highCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
+        }
+        else if (timer < (2 * Statics.SEC_TO_INTERVAL)) {
+            lowCargoMotorController.set(-Statics.Low_Cargo_Shoot_Motor_Speed);
+            highCargoMotorController.set(Statics.Low_Cargo_Motor_Speed);
+            timer++;
         }
         else {
             Robot.cargoMode = null;
+            timer = 0;
         }
     }
 
-    public void highCargoShoot() { //TODO bypass ultrasonic catch on cargo on the way out high shoot.
-        if(ultrasonicSensor.getRangeInches() < 3) {
+    public void highCargoShoot() {
+        if(ultrasonicSensor.getRangeInches() < Statics.CARGO_HOLD_DISTANCE) {
             highCargoMotorController.set(Statics.High_Cargo_Motor_Speed);
             lowCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
         }
+        else if (timer < (2 * Statics.SEC_TO_INTERVAL)) {
+            highCargoMotorController.set(Statics.High_Cargo_Motor_Speed);
+            lowCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
+            timer++;
+        }
         else {
             Robot.cargoMode = null;
+            timer = 0;
         }
     }
 

@@ -20,6 +20,10 @@ public class RobotClimb {
         climbSolenoid.set(Value.kForward);
     }
 
+    public void closePenumatics() {
+        climbSolenoid.set(Value.kReverse);
+    }
+
     public void runClimb(boolean runClimber, boolean switchPressed) {
         if (runClimber && !switchPressed) {
             climbMotorController.set(1);
@@ -31,7 +35,7 @@ public class RobotClimb {
 
     public void runScooter(boolean runScooter) {
         if (runScooter) {
-            scooterMotorController.set(-.1);
+            scooterMotorController.set(-.2);
         }
         else {
             scooterMotorController.set(0);
