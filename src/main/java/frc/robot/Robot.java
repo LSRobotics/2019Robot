@@ -8,7 +8,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+// import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Compressor;;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -26,10 +27,10 @@ import edu.wpi.first.wpilibj.DigitalInput;
  */
 
 public class Robot extends TimedRobot {
-  private static final String kAuto2 = "Auto 1";
-  private static final String kAuto1 = "Auto 2";
-  private String m_autoSelected;
-  private final SendableChooser<String> m_chooser = new SendableChooser<>();
+  // private static final String kAuto2 = "Auto 1";
+  // private static final String kAuto1 = "Auto 2";
+  // private String m_autoSelected;
+  // private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   public Gamepad ChassisGamepad;
   public Gamepad MechanismsGamepad;
@@ -59,12 +60,6 @@ public class Robot extends TimedRobot {
 
   public static CargoMode cargoMode = null;
 
-  // public static UltrasonicSensor mLeftUltrasonicSensor;
-  // public static UltrasonicSensor mRightUltrasonicSensor;
-  // public UltrasonicPIDController ultrasonicPIDController;
-  // public static double leftUltrasonicDistance;
-  // public static double rightUltrasonicDistance;
-
   public static double cargoUltrasonicDistance;
 
   public static LIDARSensor mLIDARSensor;
@@ -86,29 +81,35 @@ public class Robot extends TimedRobot {
   public static RobotClimb climb;
   public static DigitalInput limitSwitch;
 
+  public static Compressor mCompressor;
+
+  //TODO switch camera feed when reversed is pressed
+
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
    */
+  
   @Override
   public void robotInit() {
-    m_chooser.setDefaultOption("Auto 1", kAuto1);
-    m_chooser.addOption("Auto 2", kAuto2);
-    SmartDashboard.putData("Auto choices", m_chooser);
+    // m_chooser.setDefaultOption("Auto 1", kAuto1);
+    // m_chooser.addOption("Auto 2", kAuto2);
+    // SmartDashboard.putData("Auto choices", m_chooser);
+    
+    mCompressor = new Compressor(0);
+    mCompressor.setClosedLoopControl(true);
 
     initializeGamepad();
     initializeMotorControllers();
     initializeDifferentialDrive();
     initializeGyroSensor();
     initializeGyroPIDController();
-    //initializeUltrasonicSensor();
-    initializeLIDARSensor(); //TODO Test LIDAR because it wasn't tested before bag day.
+    initializeLIDARSensor(); //TODO LIDAR because it wasn't tested before bag day.
     initializeLIDARPID();
     initializeCargoMechanism();
     initializeClimb();
     initializeGorgon();
     initializePixyCam();
-    //initializeUltrasonicPIDController();
     initializeOverRoller();
   }
 
@@ -122,6 +123,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    updateSmartDashboard(); //TODO check
   }
 
   /**
@@ -137,9 +139,9 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    m_autoSelected = m_chooser.getSelected();
-    m_autoSelected = SmartDashboard.getString("Auto Selector", kAuto1);
-    System.out.println("Auto selected: " + m_autoSelected);
+    // TODO real initation m_autoSelected = m_chooser.getSelected();
+    // m_autoSelected = SmartDashboard.getString("Auto Selector", kAuto1);
+    // System.out.println("Auto selected: " + m_autoSelected);
   }
 
   /**
@@ -147,13 +149,30 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousPeriodic() {
-    switch (m_autoSelected) {
-      case kAuto1:
-        break;
-      case kAuto2:
-      default:
-        break;
+    // switch (m_autoSelected) {
+    //   case kAuto1:
+    //     break;
+    //   case kAuto2:
+    //   default:
+    //     break;
+    // }
+    updateSensors();
+    updateButtonStates();
+    updateTargetAngle();
+    if (currentPath == null) {
+      updatePresetPaths();
     }
+    if (MechanismsGamepad.Right_Stick_Down_State) {
+      currentPath = null;
+      TargetAngle = -1;
+      cargoMode = null;
+      step = 0;
+    }
+    updateGorgon();
+    updateCargoMechanism();
+    updateClimb();
+    updateOverRoller();
+    updateMove();
   }
 
   /**
@@ -167,12 +186,17 @@ public class Robot extends TimedRobot {
     if (currentPath == null) {
       updatePresetPaths();
     }
+    if (MechanismsGamepad.Right_Stick_Down_State) {
+      currentPath = null;
+      TargetAngle = -1;
+      cargoMode = null;
+      step = 0;
+    }
     updateGorgon();
     updateCargoMechanism();
     updateClimb();
     updateOverRoller();
     updateMove();
-    updateSmartDashboard();
   }
 
   /**
@@ -247,8 +271,6 @@ public class Robot extends TimedRobot {
 
   public void updateSensors() {
     gyroAngle = mGyroSensor.getAngle();
-    //leftUltrasonicDistance = mLeftUltrasonicSensor.getRangeInches();
-    //rightUltrasonicDistance = mRightUltrasonicSensor.getRangeInches();
     cargoUltrasonicDistance = cargoMechanism.ultrasonicSensor.getRangeInches();
     // lidarDistance = mLIDARSensor.getDistance();
   }
@@ -345,7 +367,7 @@ public class Robot extends TimedRobot {
     } 
 
     public void initializeLIDARPID() {
-      lidarpidController = new LIDARPIDController(.1, 0, 0, 0, mLIDARSensor, new LIDARPIDOutput()); //TODO make static
+      lidarpidController = new LIDARPIDController(.1, 0, 0, 0, mLIDARSensor, new LIDARPIDOutput()); //TODO LIDAR make static
       lidarpidController.setPercentTolerance(1);
       lidarpidController.enable();
     }
@@ -491,39 +513,14 @@ public class Robot extends TimedRobot {
     }
 
     public void updateClimb() {
-      climb.runClimb(MechanismsGamepad.Right_Trigger_Axis_State > .01, !limitSwitch.get()); //!limit switch value is correct this is tested
+      climb.runClimb(MechanismsGamepad.Right_Trigger_Axis_State > .01, !limitSwitch.get()); //TODO !limit switch value is correct this is tested
       climb.runScooter(MechanismsGamepad.Right_Bumper_State);
       if(MechanismsGamepad.Left_Bumper_State) {
         climb.openPenumatics();
       }
-      if(MechanismsGamepad.Left_Trigger_Axis_State > Statics.GAMEPAD_AXIS_TOLERANCE) {
-        climb.closePenumatics(); //TODO combine it to one button.
+      if(MechanismsGamepad.Left_Trigger_Axis_State > Statics.GAMEPAD_AXIS_TOLERANCE && MechanismsGamepad.Right_Trigger_Axis_State > Statics.GAMEPAD_AXIS_TOLERANCE) {
+        climb.closePenumatics(); //TODO test
       }
     }
 
-    // public void initializeUltrasonicSensor() {
-    //   mLeftUltrasonicSensor = new UltrasonicSensor(Statics.Left_Ultrasonic_PingChannel, Statics.Left_Ultrasonic_EchoChannel);
-    //   mLeftUltrasonicSensor.startAutomaticMode();
-    //   mRightUltrasonicSensor = new UltrasonicSensor(Statics.Right_Ultrasonic_PingChannel, Statics.Right_Ultrasonic_EchoChannel);
-    // }
-
-    // private class UltrasonicPIDOutput implements PIDOutput {
-      
-    //   public void pidWrite(double output) {
-    //     mLeftSpeed = output;
-    //     mRightSpeed = -output;
-    //   }
-    // }
-
-    // public void initializeUltrasonicPIDController() {
-    //   ultrasonicPIDController = new UltrasonicPIDController(.1, 0, 0, 0, mLeftUltrasonicSensor.getActualSensor(), new UltrasonicPIDOutput());
-    //   ultrasonicPIDController.setPercentTolerance(2);
-    //   ultrasonicPIDController.enable();
-    // }
-
-    //SmartDashboard.putNumber("Left Ultrasonic Distance in inches", leftUltrasonicDistance);
-    //SmartDashboard.putNumber("Right Ultrasonic Distance in inches", mRightUltrasonicSensor.getRangeInches());
-    //SmartDashboard.putBoolean("Validity of Left Ultrasonic Range", mLeftUltrasonicSensor.isRangeValid());
-    //SmartDashboard.putBoolean("Validity of Right Ultrasonic Range", mRightUltrasonicSensor.isRangeValid());
-    //SmartDashboard.putNumber("Calculated Ultrasonic PID Controller Output Value", ultrasonicPIDController.get());
    }

@@ -46,7 +46,7 @@ public class Statics {
 
     public final static double GAMEPAD_AXIS_TOLERANCE = 0.1;
 
-    public final static double LIDAR_CALIBRATION_OFFSET = -18; //TODO figure out what this value is or if we need it at all.
+    public final static double LIDAR_CALIBRATION_OFFSET = -18; //TODO LIDAR figure out what this value is or if we need it at all.
 
     public final static double CM_TO_IN = 0.393701;
     
