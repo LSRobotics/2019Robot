@@ -1,17 +1,19 @@
 package frc.robot;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
 public class OverRoller {
 
-    WPI_TalonSRX leftOverRollerMotorController;
-    WPI_TalonSRX rightOverRollerMotorController;
+    CANSparkMax leftOverRollerMotorController;
+    CANSparkMax rightOverRollerMotorController;
     
     public void initialize() {
-        leftOverRollerMotorController = new WPI_TalonSRX(Statics.Left_Over_Roller_CAN_ID);
-        rightOverRollerMotorController = new WPI_TalonSRX(Statics.Right_Over_Roller_CAN_ID);
+        leftOverRollerMotorController = new CANSparkMax(Statics.Left_Over_Roller_CAN_ID, MotorType.kBrushless);
+        rightOverRollerMotorController = new CANSparkMax(Statics.Right_Over_Roller_CAN_ID, MotorType.kBrushless);
         
-        leftOverRollerMotorController.configFactoryDefault();
-        rightOverRollerMotorController.configFactoryDefault();
+        leftOverRollerMotorController.restoreFactoryDefaults();
+        rightOverRollerMotorController.restoreFactoryDefaults();
     }
 
     public void lowerArms() {

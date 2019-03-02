@@ -4,8 +4,12 @@ import edu.wpi.first.cameraserver.CameraServer;
 
 public class PixyCamera {
 
+    public static CameraServer cargoCam;
+    public static CameraServer gorgonCam;
+
     public void startPixyCam() {
-        CameraServer.getInstance().startAutomaticCapture();
+        cargoCam.startAutomaticCapture();
+        gorgonCam.startAutomaticCapture();
     }
 
 }
