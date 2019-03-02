@@ -27,10 +27,14 @@ public class RobotClimb {
         climbSolenoid.set(Value.kReverse);
     }
 
-    public void runClimb(boolean runClimber, boolean switchPressed) {
-        if (runClimber && !switchPressed) {
+    public void runClimb(double direction, double pressed, boolean switchPressed) {
+        if (pressed > Statics.GAMEPAD_AXIS_TOLERANCE && direction < -Statics.GAMEPAD_AXIS_TOLERANCE) {
             climbMotorController.set(1);
         }
+        else if (pressed > Statics.GAMEPAD_AXIS_TOLERANCE && direction > Statics.GAMEPAD_AXIS_TOLERANCE && !switchPressed) {
+            climbMotorController.set(-1);
+        }   
+        
         else {
             climbMotorController.set(0);
         }
@@ -45,5 +49,13 @@ public class RobotClimb {
         }
     }
 
+    public void runClimbReverse(boolean run) {
+        if (run) {
+            climbMotorController.set(-1);
+        }
+        else {
+            climbMotorController.set(0);
+        }
+    }
 
 }

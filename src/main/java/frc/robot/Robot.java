@@ -97,7 +97,7 @@ public class Robot extends TimedRobot {
     // SmartDashboard.putData("Auto choices", m_chooser);
     
     mCompressor = new Compressor(0);
-    mCompressor.setClosedLoopControl(true);
+    mCompressor.setClosedLoopControl(true); //TODO read pressure and show on dashboard
 
     initializeGamepad();
     initializeMotorControllers();
@@ -123,7 +123,6 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    updateSmartDashboard(); //TODO check
   }
 
   /**
@@ -173,6 +172,7 @@ public class Robot extends TimedRobot {
     updateClimb();
     updateOverRoller();
     updateMove();
+    updateSmartDashboard();
   }
 
   /**
@@ -197,6 +197,7 @@ public class Robot extends TimedRobot {
     updateClimb();
     updateOverRoller();
     updateMove();
+    updateSmartDashboard();
   }
 
   /**
@@ -346,6 +347,8 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Cargo in Place", cargoMechanism.ultrasonicSensor.getRangeInches() < Statics.CARGO_HOLD_DISTANCE);
     SmartDashboard.putNumber("cargo sensor distance", cargoMechanism.ultrasonicSensor.getRangeInches());
     SmartDashboard.putBoolean("cargo sensor valid", cargoMechanism.ultrasonicSensor.isRangeValid());
+    SmartDashboard.putBoolean("Limit Switch State", !limitSwitch.get());
+    SmartDashboard.putBoolean("Compresor Running", mCompressor.getPressureSwitchValue());
     } 
 
     private class gyroPIDOutput implements PIDOutput {
@@ -484,7 +487,7 @@ public class Robot extends TimedRobot {
       if(MechanismsGamepad.DPAD_State == 0) {
         overRoller.raiseArms();
       }
-      else if(MechanismsGamepad.DPAD_State == 180) {
+      else if(MechanismsGamepad.Left_Trigger_Axis_State > Statics.GAMEPAD_AXIS_TOLERANCE) {
         overRoller.lowerArms();
       }
       else {
@@ -513,13 +516,14 @@ public class Robot extends TimedRobot {
     }
 
     public void updateClimb() {
-      climb.runClimb(MechanismsGamepad.Right_Trigger_Axis_State > .01, !limitSwitch.get()); //TODO !limit switch value is correct this is tested
+      climb.runClimb(MechanismsGamepad.Left_Stick_Y_Axis_State, MechanismsGamepad.Right_Trigger_Axis_State, !limitSwitch.get());
       climb.runScooter(MechanismsGamepad.Right_Bumper_State);
       if(MechanismsGamepad.Left_Bumper_State) {
         climb.openPenumatics();
-      }
-      if(MechanismsGamepad.Left_Trigger_Axis_State > Statics.GAMEPAD_AXIS_TOLERANCE && MechanismsGamepad.Right_Trigger_Axis_State > Statics.GAMEPAD_AXIS_TOLERANCE) {
-        climb.closePenumatics(); //TODO test
+      } //TODO add close
+
+      if(MechanismsGamepad.Start_Button_State) {
+        climb.closePenumatics();
       }
     }
 
