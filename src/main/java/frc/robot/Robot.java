@@ -97,7 +97,7 @@ public class Robot extends TimedRobot {
     // SmartDashboard.putData("Auto choices", m_chooser);
     
     mCompressor = new Compressor(0);
-    mCompressor.setClosedLoopControl(true); //TODO read pressure and show on dashboard
+    mCompressor.setClosedLoopControl(true);
 
     initializeGamepad();
     initializeMotorControllers();

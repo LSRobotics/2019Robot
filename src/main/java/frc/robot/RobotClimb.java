@@ -28,11 +28,11 @@ public class RobotClimb {
     }
 
     public void runClimb(double direction, double pressed, boolean switchPressed) {
-        if (pressed > Statics.GAMEPAD_AXIS_TOLERANCE && direction < -Statics.GAMEPAD_AXIS_TOLERANCE) {
+        // if (pressed > Statics.GAMEPAD_AXIS_TOLERANCE && direction < -Statics.GAMEPAD_AXIS_TOLERANCE) {
+        //     climbMotorController.set(1);
+        // }
+        if (pressed > Statics.GAMEPAD_AXIS_TOLERANCE && direction > Statics.GAMEPAD_AXIS_TOLERANCE && !switchPressed) {
             climbMotorController.set(1);
-        }
-        else if (pressed > Statics.GAMEPAD_AXIS_TOLERANCE && direction > Statics.GAMEPAD_AXIS_TOLERANCE && !switchPressed) {
-            climbMotorController.set(-1);
         }   
         
         else {
