@@ -22,7 +22,7 @@ public class LIDARSensor implements PIDSource{
         if(counter.get() < 1) {
             return 0;
         }
-        distanceCentimeters = (counter.getPeriod() * 1000000.0 / 10.0) + Statics.LIDAR_CALIBRATION_OFFSET; //gets centimeters from pulse width
+        distanceCentimeters = (counter.getPeriod() * 1000000.0 / 10.0);
         distanceInches = distanceCentimeters * Statics.CM_TO_IN; //conversion to inches
         return distanceInches;
     }

@@ -83,6 +83,11 @@ public class Robot extends TimedRobot {
 
   public static Compressor mCompressor;
 
+  public static boolean gorgonOpen = false;
+  public static boolean climbOpen = false;
+
+  public Lights lights;
+
   //TODO switch camera feed when reversed is pressed
 
   /**
@@ -111,6 +116,7 @@ public class Robot extends TimedRobot {
     initializeGorgon();
     initializePixyCam();
     initializeOverRoller();
+    // initializeLights();
   }
 
   /**
@@ -197,6 +203,8 @@ public class Robot extends TimedRobot {
     updateClimb();
     updateOverRoller();
     updateMove();
+    updatePixyCam();
+    // updateLights();
     updateSmartDashboard();
   }
 
@@ -209,21 +217,21 @@ public class Robot extends TimedRobot {
   }
 
   private void updateMove() {
-    if(TargetAngle != -1) {
-      if(gyroPIDController.onTarget()) {
-        TargetAngle = -1;
-      }
-      else {
-        gyroPIDController.calculate();
-        mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
-      }
-    }
+    // if(TargetAngle != -1) {
+    //   if(gyroPIDController.onTarget()) {
+    //     TargetAngle = -1;
+    //   }
+    //   else {
+    //     gyroPIDController.calculate();
+    //     mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
+    //   }
+    // }
     // else if(currentPath != null) {
     //   runPresetPaths();
     // }
-    else {
+    // else {
       updateDrive();
-    }
+    // }
   }
 
   private void initializeGamepad() {
@@ -231,6 +239,15 @@ public class Robot extends TimedRobot {
     ChassisGamepad.putButtonStates();
     MechanismsGamepad = new Gamepad(1);
     MechanismsGamepad.putButtonStates();
+  }
+
+  public void initializeLights() {
+    lights = new Lights();
+    lights.initialize();
+  }
+
+  public void updateLights() {
+    lights.lightChange(gyroAngle);
   }
 
   private static void initializeMotorControllers() {
@@ -253,6 +270,12 @@ public class Robot extends TimedRobot {
   public void initializePixyCam() {
     pixyCam = new PixyCamera();
     pixyCam.startPixyCam();
+  }
+
+  public void updatePixyCam() {
+    if(ChassisGamepad.Left_Bumper_State) {
+      pixyCam.changeCam();
+    }
   }
 
   private static void initializeDifferentialDrive() {
@@ -296,10 +319,10 @@ public class Robot extends TimedRobot {
       mRightSpeed = ChassisGamepad.Right_Stick_Y_Axis_State * Math.abs(ChassisGamepad.Right_Stick_Y_Axis_State);
       
     }
-    if (reverseDrive) {
-      mLeftSpeed = -mLeftSpeed;
-      mRightSpeed = -mRightSpeed;
-    }
+    // if (reverseDrive) {
+    //   mLeftSpeed = -mLeftSpeed;
+    //   mRightSpeed = -mRightSpeed;
+    // }
     mDifferentialDrive.tankDrive(-mLeftSpeed*Statics.SPEED_LIMIT, -mRightSpeed*Statics.SPEED_LIMIT);
   }
 
@@ -347,7 +370,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Cargo in Place", cargoMechanism.ultrasonicSensor.getRangeInches() < Statics.CARGO_HOLD_DISTANCE);
     SmartDashboard.putNumber("cargo sensor distance", cargoMechanism.ultrasonicSensor.getRangeInches());
     SmartDashboard.putBoolean("cargo sensor valid", cargoMechanism.ultrasonicSensor.isRangeValid());
-    SmartDashboard.putBoolean("Limit Switch State", !limitSwitch.get());
+    // SmartDashboard.putBoolean("Limit Switch State", !limitSwitch.get());
     SmartDashboard.putBoolean("Compresor Running", mCompressor.getPressureSwitchValue());
     } 
 
@@ -487,7 +510,7 @@ public class Robot extends TimedRobot {
       if(MechanismsGamepad.DPAD_State == 0) {
         overRoller.raiseArms();
       }
-      else if(MechanismsGamepad.Left_Trigger_Axis_State > Statics.GAMEPAD_AXIS_TOLERANCE) {
+      else if(MechanismsGamepad.DPAD_State == 180) {
         overRoller.lowerArms();
       }
       else {
@@ -503,6 +526,14 @@ public class Robot extends TimedRobot {
     public void updateGorgon() {
       if(MechanismsGamepad.DPAD_State == 90) {
         gorgon.openGorgon();
+        // if (gorgonOpen) {
+        //   gorgon.closeGorgon();
+        //   gorgonOpen = false;
+        // }
+        // else {
+        //   gorgon.openGorgon(); //TODO fix chattering
+        //   gorgonOpen = true;
+        // }
       }
       if(MechanismsGamepad.DPAD_State == 270) {
         gorgon.closeGorgon();
@@ -512,18 +543,20 @@ public class Robot extends TimedRobot {
     public void initializeClimb() {
       climb = new RobotClimb();
       climb.initialize();
-      limitSwitch = new DigitalInput(Statics.Limit_Switch_Channel);
+      // limitSwitch = new DigitalInput(Statics.Limit_Switch_Channel);
     }
 
     public void updateClimb() {
-      climb.runClimb(MechanismsGamepad.Left_Stick_Y_Axis_State, MechanismsGamepad.Right_Trigger_Axis_State, !limitSwitch.get());
-      climb.runScooter(MechanismsGamepad.Right_Bumper_State);
+      // climb.runClimb(MechanismsGamepad.Left_Stick_Y_Axis_State, MechanismsGamepad.Right_Trigger_Axis_State, !limitSwitch.get());
+      // climb.runScooter(MechanismsGamepad.Right_Bumper_State);
       if(MechanismsGamepad.Left_Bumper_State) {
-        climb.openPenumatics();
-      } //TODO add close
-
-      if(MechanismsGamepad.Start_Button_State) {
-        climb.closePenumatics();
+        if (climbOpen) {
+          climb.closePenumatics();
+        }
+        else {
+          climb.openPenumatics();
+        }
+        climbOpen = !climbOpen;
       }
     }
 

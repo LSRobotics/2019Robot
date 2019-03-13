@@ -46,15 +46,15 @@ public class Statics {
 
     public final static double GAMEPAD_AXIS_TOLERANCE = 0.1;
 
-    public final static double LIDAR_CALIBRATION_OFFSET = -18; //TODO LIDAR figure out what this value is or if we need it at all.
-
     public final static double CM_TO_IN = 0.393701;
     
     public final static double Low_Cargo_Motor_Speed = .5;
     public final static double Low_Cargo_Shoot_Motor_Speed = 1;
+    public final static double Low_Cargo_Shoot_High_Motor_Speed = .7;
     public final static double High_Cargo_Motor_Speed = 1;
-    public final static double Left_Over_Roller_Motor_Speed = 1;
-    public final static double Right_Over_Roller_Motor_Speed = 1;
+
+    public final static double Left_Over_Roller_Motor_Speed = .5;
+    public final static double Right_Over_Roller_Motor_Speed = .5;
 
     public final static double CARGO_HOLD_DISTANCE = 6;
 
@@ -62,4 +62,6 @@ public class Statics {
     public final static int SEC_TO_INTERVAL = 50;
 
     public final static double SPEED_LIMIT = .8;
+    public final static double High_Cargo_Intake_Motor_Speed = .8;
+    public final static int Light_PWM_Port = 0;
 }

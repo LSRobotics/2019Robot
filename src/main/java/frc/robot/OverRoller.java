@@ -17,13 +17,13 @@ public class OverRoller {
     }
 
     public void lowerArms() {
-        leftOverRollerMotorController.set(.25);
-        rightOverRollerMotorController.set(-.25);
+        leftOverRollerMotorController.set(Statics.Left_Over_Roller_Motor_Speed);
+        rightOverRollerMotorController.set(-Statics.Right_Over_Roller_Motor_Speed);
     }
 
     public void raiseArms() {
-        leftOverRollerMotorController.set(-.25);
-        rightOverRollerMotorController.set(.25);
+        leftOverRollerMotorController.set(-Statics.Left_Over_Roller_Motor_Speed);
+        rightOverRollerMotorController.set(Statics.Right_Over_Roller_Motor_Speed);
     }
 
     public void stopArms() {

@@ -48,7 +48,7 @@ public class CargoMechanism {
 
     public void highCargoPickup() {
         if(ultrasonicSensor.getRangeInches() > Statics.CARGO_HOLD_DISTANCE) {
-            highCargoMotorController.set(-Statics.High_Cargo_Motor_Speed);
+            highCargoMotorController.set(-Statics.High_Cargo_Intake_Motor_Speed);
         }
         else {
             Robot.cargoMode = null;
@@ -58,7 +58,7 @@ public class CargoMechanism {
     public void lowCargoShoot() {
         if(ultrasonicSensor.getRangeInches() < Statics.CARGO_HOLD_DISTANCE) {
             lowCargoMotorController.set(-Statics.Low_Cargo_Shoot_Motor_Speed);
-            highCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
+            highCargoMotorController.set(-Statics.Low_Cargo_Shoot_High_Motor_Speed);
         }
         else if (timer < (2 * Statics.SEC_TO_INTERVAL)) {
             lowCargoMotorController.set(-Statics.Low_Cargo_Shoot_Motor_Speed);
@@ -74,11 +74,11 @@ public class CargoMechanism {
     public void highCargoShoot() {
         if(ultrasonicSensor.getRangeInches() < Statics.CARGO_HOLD_DISTANCE) {
             highCargoMotorController.set(Statics.High_Cargo_Motor_Speed);
-            lowCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
+            lowCargoMotorController.set(-.2);
         }
         else if (timer < (2 * Statics.SEC_TO_INTERVAL)) {
             highCargoMotorController.set(Statics.High_Cargo_Motor_Speed);
-            lowCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
+            //lowCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
             timer++;
         }
         else {
