@@ -89,6 +89,7 @@ public class Robot extends TimedRobot {
   public Lights lights;
   public double lightMode;
   public boolean ballCall;
+  public boolean climbLights = false;
 
   //TODO switch camera feed when reversed is pressed
 
@@ -207,7 +208,8 @@ public class Robot extends TimedRobot {
     updateOverRoller();
     updateMove();
     callForBall();
-    updatePixyCam();
+    climbLightChange();
+    //updatePixyCam();
     updateLights();
     updateSmartDashboard();
   }
@@ -259,30 +261,41 @@ public class Robot extends TimedRobot {
     }
   }
 
+  public void climbLightChange() {
+    if(MechanismsGamepad.Left_Bumper_State) {
+      climbLights = true;
+    }
+  }
+
   public void updateLights() {
-    if(ballCall) {
-      lightMode = .93;
+    if(climbLights) {
+      lightMode = -.45;
     }
     else {
-      if(cargoMechanism.ballCaptured()) {
-        lightMode = .27;
+      if(ballCall) {
+        lightMode = .93;
       }
       else {
-        if (gyroAngle > 89 && gyroAngle < 91) {
-          lightMode = .77;
-        }
-        else if (gyroAngle > 179 && gyroAngle < 181) {
-          lightMode = .77;
-        }
-        else if (gyroAngle > 269 &&  gyroAngle < 271) {
-          lightMode = .77;
-        }
-        else if (gyroAngle > 359 || gyroAngle < 1) {
-          lightMode = .77;
+        if(cargoMechanism.ballCaptured()) {
+          lightMode = .57;
         }
         else {
-          if (DriverStation.getInstance().getAlliance() == DriverStation.Alliance.Blue) lightMode = .85;
-          else lightMode = .61;
+          if (Math.abs(gyroAngle % 360) > 88 && Math.abs(gyroAngle % 360) < 92) {
+            lightMode = .77;
+          }
+          else if (Math.abs(gyroAngle % 360) > 178 && Math.abs(gyroAngle % 360) < 182) {
+            lightMode = .77;
+          }
+          else if (Math.abs(gyroAngle % 360) > 268 && Math.abs(gyroAngle % 360) < 272) {
+            lightMode = .77;
+          }
+          else if (Math.abs(gyroAngle % 360) > 358 || Math.abs(gyroAngle % 360) < 2) {
+            lightMode = .77;
+          }
+          else { 
+            if (DriverStation.getInstance().getAlliance() == DriverStation.Alliance.Blue) lightMode = .85;
+            else lightMode = .61;
+          }
         }
       }
     }

@@ -14,11 +14,11 @@ public class PixyCamera {
 
     public void startPixyCam() {
         cam0 = CameraServer.getInstance().startAutomaticCapture(0);
-        cam0.setResolution(240, 160);
+        cam0.setResolution(240,160);
         cam0.setFPS(15);
-        cam1 = CameraServer.getInstance().startAutomaticCapture(1);
-        cam1.setResolution(240, 160);
-        cam1.setFPS(15);
+        // cam1 = CameraServer.getInstance().startAutomaticCapture(1);
+        // cam1.setResolution(240, 160);
+        // cam1.setFPS(15);
         server = CameraServer.getInstance().getServer();
         server.setSource(cam0);
     }
@@ -28,10 +28,10 @@ public class PixyCamera {
             switched = false;
             server.setSource(cam0);
         }
-        else {
-            switched = true;
-            server.setSource(cam1);
-        }
+        // else {
+        //     switched = true;
+        //     server.setSource(cam1);
+        // }
     }
 
 }                                         
