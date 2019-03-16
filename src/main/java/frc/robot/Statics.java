@@ -62,6 +62,6 @@ public class Statics {
     public final static int SEC_TO_INTERVAL = 50;
 
     public final static double SPEED_LIMIT = .8;
-    public final static double High_Cargo_Intake_Motor_Speed = .8;
+    public final static double High_Cargo_Intake_Motor_Speed = .5;
     public final static int Light_PWM_Port = 0;
 }

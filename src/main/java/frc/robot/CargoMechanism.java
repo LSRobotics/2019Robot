@@ -18,6 +18,13 @@ public class CargoMechanism {
         highCargoMotorController = new WPI_TalonSRX(Statics.High_Cargo_CAN_ID);
     }
 
+    public boolean ballCaptured() {
+        if(ultrasonicSensor.getRangeInches() < 6) {
+            return true;
+        }
+        return false;
+    }
+
     public void runCargo() {
         if (Robot.cargoMode == CargoMode.LOWPICKUP) {
             lowCargoPickup();

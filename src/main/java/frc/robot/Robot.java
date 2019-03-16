@@ -88,6 +88,7 @@ public class Robot extends TimedRobot {
 
   public Lights lights;
   public double lightMode;
+  public boolean ballCall;
 
   //TODO switch camera feed when reversed is pressed
 
@@ -205,6 +206,7 @@ public class Robot extends TimedRobot {
     updateClimb();
     updateOverRoller();
     updateMove();
+    callForBall();
     updatePixyCam();
     updateLights();
     updateSmartDashboard();
@@ -248,22 +250,42 @@ public class Robot extends TimedRobot {
     lights.initialize();
   }
 
+  public void callForBall() {
+    if(ChassisGamepad.A_Button_State) {
+      ballCall = true;
+    }
+    if(ChassisGamepad.B_Button_State) {
+      ballCall = false;
+    }
+  }
+
   public void updateLights() {
-     if (gyroAngle > 89 && gyroAngle < 91) {
-            lightMode = .77;
+    if(ballCall) {
+      lightMode = .93;
+    }
+    else {
+      if(cargoMechanism.ballCaptured()) {
+        lightMode = .27;
+      }
+      else {
+        if (gyroAngle > 89 && gyroAngle < 91) {
+          lightMode = .77;
         }
         else if (gyroAngle > 179 && gyroAngle < 181) {
-            lightMode = .77;
+          lightMode = .77;
         }
         else if (gyroAngle > 269 &&  gyroAngle < 271) {
-            lightMode = .77;
+          lightMode = .77;
         }
         else if (gyroAngle > 359 || gyroAngle < 1) {
-            lightMode = .77;
+          lightMode = .77;
         }
         else {
-            if (DriverStation.getInstance().getAlliance() == DriverStation.Alliance.Blue) lightMode = .85;
+          if (DriverStation.getInstance().getAlliance() == DriverStation.Alliance.Blue) lightMode = .85;
+          else lightMode = .61;
         }
+      }
+    }
     lights.lightChange(lightMode);
   }
 
@@ -319,8 +341,8 @@ public class Robot extends TimedRobot {
   //else contains true tank drive
   public void updateDrive() {
     if(Math.abs(ChassisGamepad.Left_Stick_Y_Axis_State) < Statics.GAMEPAD_AXIS_TOLERANCE && Math.abs(ChassisGamepad.Right_Stick_Y_Axis_State) < Statics.GAMEPAD_AXIS_TOLERANCE) {
-      mLeftSpeed = Math.pow(ChassisGamepad.Left_Trigger_Axis_State, 2); //squared
-      mRightSpeed = Math.pow(ChassisGamepad.Right_Trigger_Axis_State, 2); //squared
+      mLeftSpeed = Math.pow(ChassisGamepad.Left_Trigger_Axis_State, 3); //cubed
+      mRightSpeed = Math.pow(ChassisGamepad.Right_Trigger_Axis_State, 3); //cubed
       if (mLeftSpeed > mRightSpeed) {
         mRightSpeed = mLeftSpeed;
       }
@@ -332,8 +354,8 @@ public class Robot extends TimedRobot {
 
 
     else {
-      mLeftSpeed = ChassisGamepad.Left_Stick_Y_Axis_State * Math.abs(ChassisGamepad.Left_Stick_Y_Axis_State);
-      mRightSpeed = ChassisGamepad.Right_Stick_Y_Axis_State * Math.abs(ChassisGamepad.Right_Stick_Y_Axis_State);
+      mLeftSpeed = Math.pow(ChassisGamepad.Left_Stick_Y_Axis_State, 3);
+      mRightSpeed = Math.pow(ChassisGamepad.Right_Stick_Y_Axis_State, 3);
       
     }
     // if (reverseDrive) {
