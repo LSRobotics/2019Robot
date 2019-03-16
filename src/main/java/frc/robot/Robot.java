@@ -8,7 +8,6 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-// import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
@@ -16,7 +15,8 @@ import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Compressor;;
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DriverStation;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -87,6 +87,7 @@ public class Robot extends TimedRobot {
   public static boolean climbOpen = false;
 
   public Lights lights;
+  public double lightMode;
 
   //TODO switch camera feed when reversed is pressed
 
@@ -116,7 +117,7 @@ public class Robot extends TimedRobot {
     initializeGorgon();
     initializePixyCam();
     initializeOverRoller();
-    // initializeLights();
+    initializeLights();
   }
 
   /**
@@ -178,6 +179,7 @@ public class Robot extends TimedRobot {
     updateClimb();
     updateOverRoller();
     updateMove();
+    updateLights();
     updateSmartDashboard();
   }
 
@@ -204,7 +206,7 @@ public class Robot extends TimedRobot {
     updateOverRoller();
     updateMove();
     updatePixyCam();
-    // updateLights();
+    updateLights();
     updateSmartDashboard();
   }
 
@@ -247,7 +249,22 @@ public class Robot extends TimedRobot {
   }
 
   public void updateLights() {
-    lights.lightChange(gyroAngle);
+     if (gyroAngle > 89 && gyroAngle < 91) {
+            lightMode = .77;
+        }
+        else if (gyroAngle > 179 && gyroAngle < 181) {
+            lightMode = .77;
+        }
+        else if (gyroAngle > 269 &&  gyroAngle < 271) {
+            lightMode = .77;
+        }
+        else if (gyroAngle > 359 || gyroAngle < 1) {
+            lightMode = .77;
+        }
+        else {
+            if (DriverStation.getInstance().getAlliance() == DriverStation.Alliance.Blue) lightMode = .85;
+        }
+    lights.lightChange(lightMode);
   }
 
   private static void initializeMotorControllers() {
@@ -370,8 +387,9 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Cargo in Place", cargoMechanism.ultrasonicSensor.getRangeInches() < Statics.CARGO_HOLD_DISTANCE);
     SmartDashboard.putNumber("cargo sensor distance", cargoMechanism.ultrasonicSensor.getRangeInches());
     SmartDashboard.putBoolean("cargo sensor valid", cargoMechanism.ultrasonicSensor.isRangeValid());
-    // SmartDashboard.putBoolean("Limit Switch State", !limitSwitch.get());
     SmartDashboard.putBoolean("Compresor Running", mCompressor.getPressureSwitchValue());
+    SmartDashboard.putNumber("Left Overroller Encoder", overRoller.getLeftEncoder());
+    SmartDashboard.putNumber("Right Overroller Encoder", overRoller.getRightEncoder());
     } 
 
     private class gyroPIDOutput implements PIDOutput {
@@ -507,7 +525,7 @@ public class Robot extends TimedRobot {
     }
 
     public void updateOverRoller() {
-      if(MechanismsGamepad.DPAD_State == 0) {
+      if(MechanismsGamepad.DPAD_State == 0 && overRoller.getLeftEncoder() > 21 && overRoller.getRightEncoder() < -21) {
         overRoller.raiseArms();
       }
       else if(MechanismsGamepad.DPAD_State == 180) {

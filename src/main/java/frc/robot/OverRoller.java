@@ -14,6 +14,9 @@ public class OverRoller {
         
         leftOverRollerMotorController.restoreFactoryDefaults();
         rightOverRollerMotorController.restoreFactoryDefaults();
+
+        leftOverRollerMotorController.getEncoder().setPosition(0);
+        rightOverRollerMotorController.getEncoder().setPosition(0);
     }
 
     public void lowerArms() {
@@ -29,6 +32,14 @@ public class OverRoller {
     public void stopArms() {
         leftOverRollerMotorController.set(0);
         rightOverRollerMotorController.set(0);
+    }
+
+    public double getLeftEncoder() {
+        return leftOverRollerMotorController.getEncoder().getPosition();
+    }
+
+    public double getRightEncoder() {
+        return rightOverRollerMotorController.getEncoder().getPosition();
     }
 
 }

@@ -74,7 +74,7 @@ public class CargoMechanism {
     public void highCargoShoot() {
         if(ultrasonicSensor.getRangeInches() < Statics.CARGO_HOLD_DISTANCE) {
             highCargoMotorController.set(Statics.High_Cargo_Motor_Speed);
-            lowCargoMotorController.set(-.2);
+            lowCargoMotorController.set(-.7);
         }
         else if (timer < (2 * Statics.SEC_TO_INTERVAL)) {
             highCargoMotorController.set(Statics.High_Cargo_Motor_Speed);
