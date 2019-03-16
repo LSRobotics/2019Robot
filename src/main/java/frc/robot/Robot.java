@@ -269,7 +269,7 @@ public class Robot extends TimedRobot {
 
   public void updateLights() {
     if(climbLights) {
-      lightMode = -.45;
+      lightMode = -.55;
     }
     else {
       if(ballCall) {
