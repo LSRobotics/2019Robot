@@ -62,7 +62,10 @@ public class Statics {
     public final static int MIN_TO_SEC = 60;
     public final static int SEC_TO_INTERVAL = 50;
 
-    public final static double SPEED_LIMIT = .8;
+    public final static double SPEED_LIMIT = .9;
     public final static double High_Cargo_Intake_Motor_Speed = .5;
     public final static int Light_PWM_Port = 0;
+
+    public final static int IR_Sensor_Port = 3;
+    public final static int Winch_CAN_ID = 12;
 }

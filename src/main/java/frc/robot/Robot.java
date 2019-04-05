@@ -14,6 +14,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.interfaces.Accelerometer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -52,7 +53,7 @@ public class Robot extends TimedRobot {
 
   public static double TargetAngle = -1;
 
-  // public onGoingPath currentPath = null;
+  public onGoingPath currentPath = null;
   public static int step = 0;
 
   public static GyroSensor mGyroSensor;
@@ -62,9 +63,9 @@ public class Robot extends TimedRobot {
 
   public static double cargoUltrasonicDistance;
 
-  // public static LIDARSensor mLIDARSensor;
-  // public LIDARPIDController lidarpidController;
-  // public double lidarDistance;
+  public static LIDARSensor mLIDARSensor;
+  public LIDARPIDController lidarpidController;
+  public double lidarDistance;
 
   public static boolean reverseAuto = false;
   
@@ -91,6 +92,10 @@ public class Robot extends TimedRobot {
   public boolean ballCall;
   public boolean climbLights = false;
 
+  public double speedLimiter = 1;
+  public IRSensor irSensor;
+  public Winch winch;
+
   //TODO switch camera feed when reversed is pressed
 
   /**
@@ -112,13 +117,14 @@ public class Robot extends TimedRobot {
     initializeDifferentialDrive();
     initializeGyroSensor();
     initializeGyroPIDController();
-    // initializeLIDARSensor(); //TODO LIDAR because it wasn't tested before bag day.
-    // initializeLIDARPID();
+    initializeLIDARSensor(); //TODO LIDAR because it wasn't tested before bag day.
+    initializeLIDARPID();
     initializeCargoMechanism();
     initializeClimb();
     initializeGorgon();
     initializePixyCam();
     initializeOverRoller();
+    initializeWinch();
     initializeLights();
   }
 
@@ -157,30 +163,27 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousPeriodic() {
-    // switch (m_autoSelected) {
-    //   case kAuto1:
-    //     break;
-    //   case kAuto2:
-    //   default:
-    //     break;
-    // }
     updateSensors();
     updateButtonStates();
     updateTargetAngle();
-    // if (currentPath == null) {
-    //   updatePresetPaths();
-    // }
     if (MechanismsGamepad.Right_Stick_Down_State) {
-      // currentPath = null;
+      currentPath = null;
       TargetAngle = -1;
       cargoMode = null;
       step = 0;
+    }
+    if (ChassisGamepad.Right_Bumper_State) {
+      if (speedLimiter == 1) speedLimiter = .5;
+      else speedLimiter = 1;
     }
     updateGorgon();
     updateCargoMechanism();
     updateClimb();
     updateOverRoller();
     updateMove();
+    callForBall();
+    updateWinch();
+    updatePixyCam();
     updateLights();
     updateSmartDashboard();
   }
@@ -193,14 +196,15 @@ public class Robot extends TimedRobot {
     updateSensors();
     updateButtonStates();
     updateTargetAngle();
-    // if (currentPath == null) {
-    //   updatePresetPaths();
-    // }
     if (MechanismsGamepad.Right_Stick_Down_State) {
-      // currentPath = null;
+      currentPath = null;
       TargetAngle = -1;
       cargoMode = null;
       step = 0;
+    }
+    if (ChassisGamepad.Right_Bumper_State) {
+      if (speedLimiter == 1) speedLimiter = .5;
+      else speedLimiter = 1;
     }
     updateGorgon();
     updateCargoMechanism();
@@ -208,8 +212,8 @@ public class Robot extends TimedRobot {
     updateOverRoller();
     updateMove();
     callForBall();
-    climbLightChange();
-    //updatePixyCam();
+    updateWinch();
+    updatePixyCam();
     updateLights();
     updateSmartDashboard();
   }
@@ -223,21 +227,21 @@ public class Robot extends TimedRobot {
   }
 
   private void updateMove() {
-    // if(TargetAngle != -1) {
-    //   if(gyroPIDController.onTarget()) {
-    //     TargetAngle = -1;
-    //   }
-    //   else {
-    //     gyroPIDController.calculate();
-    //     mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
-    //   }
-    // }
-    // else if(currentPath != null) {
-    //   runPresetPaths();
-    // }
-    // else {
+    if(TargetAngle != -1) {
+      if(gyroPIDController.onTarget()) {
+        TargetAngle = -1;
+      }
+      else {
+        gyroPIDController.calculate();
+        mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
+      }
+    }
+    else if(currentPath != null) {
+      runPresetPaths();
+    }
+    else {
       updateDrive();
-    // }
+    }
   }
 
   private void initializeGamepad() {
@@ -254,21 +258,17 @@ public class Robot extends TimedRobot {
 
   public void callForBall() {
     if(ChassisGamepad.A_Button_State) {
-      ballCall = true;
-    }
-    if(ChassisGamepad.B_Button_State) {
-      ballCall = false;
-    }
-  }
-
-  public void climbLightChange() {
-    if(MechanismsGamepad.Left_Bumper_State) {
-      climbLights = true;
+      if(ballCall) {
+        ballCall = false;
+      }
+      else {
+        ballCall = true;
+      }
     }
   }
 
   public void updateLights() {
-    if(climbLights) {
+    if(MechanismsGamepad.Left_Bumper_State || lightMode == -.55) {
       lightMode = -.55;
     }
     else {
@@ -276,27 +276,30 @@ public class Robot extends TimedRobot {
         lightMode = .93;
       }
       else {
-        if(cargoMechanism.ballCaptured()) {
-          lightMode = .57;
+        if (Math.abs(gyroAngle % 360) > 87 && Math.abs(gyroAngle % 360) < 93) {
+          lightMode = .77;
+        }
+        else if (Math.abs(gyroAngle % 360) > 177 && Math.abs(gyroAngle % 360) < 183) {
+          lightMode = .77;
+        }
+        else if (Math.abs(gyroAngle % 360) > 267 && Math.abs(gyroAngle % 360) < 273) {
+          lightMode = .77;
+        }
+        else if (Math.abs(gyroAngle % 360) > 357 || Math.abs(gyroAngle % 360) < 3) {
+          lightMode = .77;
         }
         else {
-          if (Math.abs(gyroAngle % 360) > 88 && Math.abs(gyroAngle % 360) < 92) {
-            lightMode = .77;
+          if(cargoMechanism.ballCaptured()) {
+            lightMode = .57;
           }
-          else if (Math.abs(gyroAngle % 360) > 178 && Math.abs(gyroAngle % 360) < 182) {
-            lightMode = .77;
+          else if(gorgonOpen) {
+            lightMode = .63;
           }
-          else if (Math.abs(gyroAngle % 360) > 268 && Math.abs(gyroAngle % 360) < 272) {
-            lightMode = .77;
-          }
-          else if (Math.abs(gyroAngle % 360) > 358 || Math.abs(gyroAngle % 360) < 2) {
-            lightMode = .77;
-          }
-          else { 
+          else {
             if (DriverStation.getInstance().getAlliance() == DriverStation.Alliance.Blue) lightMode = .85;
             else lightMode = .61;
           }
-        }
+        }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
       }
     }
     lights.lightChange(lightMode);
@@ -333,7 +336,7 @@ public class Robot extends TimedRobot {
   private static void initializeDifferentialDrive() {
     mLeftSpeedControllers = new SpeedControllerGroup(mFrontLeft, mRearLeft);
     mRightSpeedControllers = new SpeedControllerGroup(mFrontRight, mRearRight);
-
+  
     mDifferentialDrive = new DifferentialDrive(mLeftSpeedControllers, mRightSpeedControllers);
   }
 
@@ -348,7 +351,7 @@ public class Robot extends TimedRobot {
   public void updateSensors() {
     gyroAngle = mGyroSensor.getAngle();
     cargoUltrasonicDistance = cargoMechanism.ultrasonicSensor.getRangeInches();
-    // lidarDistance = mLIDARSensor.getDistance();
+    lidarDistance = mLIDARSensor.getDistance();
   }
 
   //else contains true tank drive
@@ -369,13 +372,12 @@ public class Robot extends TimedRobot {
     else {
       mLeftSpeed = Math.pow(ChassisGamepad.Left_Stick_Y_Axis_State, 3);
       mRightSpeed = Math.pow(ChassisGamepad.Right_Stick_Y_Axis_State, 3);
-      
     }
     // if (reverseDrive) {
     //   mLeftSpeed = -mLeftSpeed;
     //   mRightSpeed = -mRightSpeed;
     // }
-    mDifferentialDrive.tankDrive(-mLeftSpeed*Statics.SPEED_LIMIT, -mRightSpeed*Statics.SPEED_LIMIT);
+    mDifferentialDrive.tankDrive(-mLeftSpeed*Statics.SPEED_LIMIT*speedLimiter, -mRightSpeed*Statics.SPEED_LIMIT*speedLimiter);
   }
 
   public void updateTargetAngle() {
@@ -425,6 +427,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Compresor Running", mCompressor.getPressureSwitchValue());
     SmartDashboard.putNumber("Left Overroller Encoder", overRoller.getLeftEncoder());
     SmartDashboard.putNumber("Right Overroller Encoder", overRoller.getRightEncoder());
+    SmartDashboard.putNumber("Winch Encoder", winch.getWinchEncoderValue());    
     } 
 
     private class gyroPIDOutput implements PIDOutput {
@@ -441,93 +444,60 @@ public class Robot extends TimedRobot {
       gyroPIDController.enable();
     }
 
-    // public void initializeLIDARSensor() {
-    //   mLIDARSensor = new LIDARSensor(new DigitalInput(Statics.LIDAR_Sensor_Channel));
-    // } 
+    public void initializeLIDARSensor() {
+      mLIDARSensor = new LIDARSensor(new DigitalInput(Statics.LIDAR_Sensor_Channel));
+    }
+    
+    public void initializeIRSensor() {
+      irSensor = new IRSensor(new DigitalInput(Statics.IR_Sensor_Port));
+    }
 
-    // public void initializeLIDARPID() {
-    //   lidarpidController = new LIDARPIDController(.1, 0, 0, 0, mLIDARSensor, new LIDARPIDOutput()); //TODO LIDAR make static
-    //   lidarpidController.setPercentTolerance(1);
-    //   lidarpidController.enable();
-    // }
+    public void initializeLIDARPID() {
+      lidarpidController = new LIDARPIDController(.1, 0, 0, 0, mLIDARSensor, new LIDARPIDOutput()); //TODO LIDAR make static
+      lidarpidController.setPercentTolerance(1);
+      lidarpidController.enable();
+    }
 
-    // private class LIDARPIDOutput implements PIDOutput {
+    private class LIDARPIDOutput implements PIDOutput {
 
-    //   public void pidWrite(double output) {
-    //     mLeftSpeed = output;
-    //     mRightSpeed = output;
-    //   }
-    // }
+      public void pidWrite(double output) {
+        mLeftSpeed = output;
+        mRightSpeed = output;
+      }
+    }
 
     public void initializeCargoMechanism() {
       cargoMechanism = new CargoMechanism();
       cargoMechanism.initialize();
     }
 
-    // public void updatePresetPaths() {
-    //   reverseAuto = ChassisGamepad.Left_Bumper_State;
-    //   if (ChassisGamepad.A_Button_State) {
-    //     currentPath = onGoingPath.nearCargo;
-    //   }
-    //   else if (ChassisGamepad.B_Button_State) {
-    //     currentPath = onGoingPath.middleCargo;
-    //   }
-    //   else if (ChassisGamepad.X_Button_State) {
-    //     currentPath = onGoingPath.rocketShip;
-    //   }
-    //   else if (ChassisGamepad.Y_Button_State) {
-    //     currentPath = onGoingPath.farCargo;
-    //   }
-    // }
-
-    // public void runPresetPaths() {
-    //   if (step == 0) {
-    //      if(lidarDistance > 2) {
-    //       lidarpidController.setSetpoint(32);
-    //       if(!lidarpidController.onTarget()) {
-    //          lidarpidController.calculate();
-    //          mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
-    //       }
-    //       else {
-    //         step++;
-    //       }
-    //     }
-    //   }
-    //   if (step == 1) {
-    //      gyroPIDController.setSetpoint(0);
-    //     if(!gyroPIDController.onTarget()) {
-    //       gyroPIDController.calculate();
-    //        mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
-    //     }
-    //     else {
-    //       step++;
-    //     }
-    //    }
-    //    if (step == 2) {
-    //      if(lidarDistance > 2) {
-    //        lidarpidController.setSetpoint(currentPath.lidarDistance);
-    //        if(!lidarpidController.onTarget()) {
-    //          lidarpidController.calculate();
-    //          mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
-    //         }
-    //        else {
-    //          step++;
-    //        }
-    //     }
-    //    }
-    //    if (step == 3) {
-    //      if (!reverseAuto) gyroPIDController.setSetpoint(currentPath.gyroAngle);
-    //      else gyroPIDController.setSetpoint((currentPath.gyroAngle+180) % 360);
-    //      if(!gyroPIDController.onTarget()) {
-    //        gyroPIDController.calculate();
-    //        mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
-    //      }
-    //     else {
-    //       step = 0;
-    //       currentPath = null;
-    //     }
-    //   }
-    // }
+    public void runPresetPaths() {
+      if(irSensor.tapeDetected()) {
+        if (step == 0) {
+          gyroPIDController.setSetpoint(0);
+          if(!gyroPIDController.onTarget()) {
+            gyroPIDController.calculate();
+            mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
+          }
+          else {
+            step++;
+          }
+        }
+        if (step == 1) {
+          if(lidarDistance > 2) {
+            lidarpidController.setSetpoint(32);
+            if(!lidarpidController.onTarget()) {
+              lidarpidController.calculate();
+              mDifferentialDrive.tankDrive(mLeftSpeed, mRightSpeed);
+            }
+          else {
+            step = 0;
+            currentPath = null;
+          }
+        }
+      }
+    }
+  }
 
     public void updateCargoMechanism() {
       if (cargoMode != null) {
@@ -571,6 +541,23 @@ public class Robot extends TimedRobot {
       }
     }
 
+    public void initializeWinch() {
+      winch = new Winch();
+      winch.initializeWinch();
+    }
+
+    public void updateWinch() {
+      if(MechanismsGamepad.Right_Stick_Y_Axis_State < -.1 && winch.getWinchEncoderValue() > -9800) {
+        winch.raiseGorgon();
+      }
+      else if(MechanismsGamepad.Right_Stick_Y_Axis_State > .1 && winch.getWinchEncoderValue() < 0) {
+       winch.lowerGorgon();
+      }
+      else {
+        winch.stopGorgon();
+      }
+    }
+
     public void initializeGorgon() {
       gorgon = new Gorgon();
       gorgon.initialize();
@@ -579,29 +566,20 @@ public class Robot extends TimedRobot {
     public void updateGorgon() {
       if(MechanismsGamepad.DPAD_State == 90) {
         gorgon.openGorgon();
-        // if (gorgonOpen) {
-        //   gorgon.closeGorgon();
-        //   gorgonOpen = false;
-        // }
-        // else {
-        //   gorgon.openGorgon(); //TODO fix chattering
-        //   gorgonOpen = true;
-        // }
+        gorgonOpen = true;
       }
       if(MechanismsGamepad.DPAD_State == 270) {
         gorgon.closeGorgon();
+        gorgonOpen = false;
       }
     }
 
     public void initializeClimb() {
       climb = new RobotClimb();
       climb.initialize();
-      // limitSwitch = new DigitalInput(Statics.Limit_Switch_Channel);
     }
 
     public void updateClimb() {
-      // climb.runClimb(MechanismsGamepad.Left_Stick_Y_Axis_State, MechanismsGamepad.Right_Trigger_Axis_State, !limitSwitch.get());
-      // climb.runScooter(MechanismsGamepad.Right_Bumper_State);
       if(MechanismsGamepad.Left_Bumper_State) {
         if (climbOpen) {
           climb.closePenumatics();

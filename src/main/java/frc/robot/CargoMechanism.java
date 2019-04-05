@@ -85,7 +85,7 @@ public class CargoMechanism {
         }
         else if (timer < (2 * Statics.SEC_TO_INTERVAL)) {
             highCargoMotorController.set(Statics.High_Cargo_Motor_Speed);
-            //lowCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
+            lowCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
             timer++;
         }
         else {
