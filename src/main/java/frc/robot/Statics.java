@@ -67,5 +67,5 @@ public class Statics {
     public final static int Light_PWM_Port = 0;
 
     public final static int IR_Sensor_Port = 3;
-    public final static int Winch_CAN_ID = 12;
+    public final static int Winch_CAN_ID = 4;
 }

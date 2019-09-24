@@ -368,7 +368,6 @@ public class Robot extends TimedRobot {
       }
     }
 
-
     else {
       mLeftSpeed = Math.pow(ChassisGamepad.Left_Stick_Y_Axis_State, 3);
       mRightSpeed = Math.pow(ChassisGamepad.Right_Stick_Y_Axis_State, 3);
@@ -415,6 +414,10 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Mechanism Controller D-PAD", MechanismsGamepad.DPAD_State);
     SmartDashboard.putNumber("Left Motor Amp output", overRoller.leftOverRollerMotorController.getOutputCurrent());
     SmartDashboard.putNumber("Right Motor Amp output", overRoller.rightOverRollerMotorController.getOutputCurrent());
+    SmartDashboard.putNumber("Front Left Motor", mFrontLeft.getOutputCurrent());
+    SmartDashboard.putNumber("Front Right Motor", mFrontRight.getOutputCurrent());
+    SmartDashboard.putNumber("Back Left Motor", mRearLeft.getOutputCurrent());
+    SmartDashboard.putNumber("Back Right Motor", mRearRight.getOutputCurrent());
     
     //all other values
     SmartDashboard.putNumber("Currrent Target Angle in Degrees", TargetAngle);
@@ -547,10 +550,10 @@ public class Robot extends TimedRobot {
     }
 
     public void updateWinch() {
-      if(MechanismsGamepad.Right_Stick_Y_Axis_State < -.1 && winch.getWinchEncoderValue() > -9800) {
+      if(MechanismsGamepad.Right_Stick_Y_Axis_State > .2 && winch.getWinchEncoderValue() > -10000) {
         winch.raiseGorgon();
       }
-      else if(MechanismsGamepad.Right_Stick_Y_Axis_State > .1 && winch.getWinchEncoderValue() < 0) {
+      else if(MechanismsGamepad.Right_Stick_Y_Axis_State < -.2 && winch.getWinchEncoderValue() < -10) {
        winch.lowerGorgon();
       }
       else {
