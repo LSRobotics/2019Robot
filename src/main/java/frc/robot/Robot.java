@@ -33,8 +33,8 @@ public class Robot extends TimedRobot {
   // private String m_autoSelected;
   // private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-  public Gamepad ChassisGamepad;
-  public Gamepad MechanismsGamepad;
+  public Gamepad gp1;
+  public Gamepad gp2;
   
   public static WPI_TalonSRX mFrontLeft;
   public static WPI_TalonSRX mRearLeft;
@@ -71,15 +71,6 @@ public class Robot extends TimedRobot {
   
   public static double gyroAngle;
 
-  public PixyCamera pixyCam;
-
-  public static CargoMechanism cargoMechanism;
-
-  public static OverRoller overRoller;
-
-  public static Gorgon gorgon;
-
-  public static RobotClimb climb;
   public static DigitalInput limitSwitch;
 
   public static Compressor mCompressor;
@@ -90,7 +81,7 @@ public class Robot extends TimedRobot {
   public Lights lights;
   public double lightMode;
   public boolean ballCall;
-  public boolean climbLights = false;
+  public boolean RobotClimbLights = false;
 
   public double speedLimiter = 1;
   public IRSensor irSensor;
@@ -110,7 +101,7 @@ public class Robot extends TimedRobot {
     // SmartDashboard.putData("Auto choices", m_chooser);
     
     mCompressor = new Compressor(0);
-    mCompressor.setClosedLoopControl(true);
+    //mCompressor.setClosedLoopControl(true);
 
     initializeGamepad();
     initializeMotorControllers();
@@ -119,11 +110,11 @@ public class Robot extends TimedRobot {
     initializeGyroPIDController();
     initializeLIDARSensor(); //TODO LIDAR because it wasn't tested before bag day.
     initializeLIDARPID();
-    initializeCargoMechanism();
-    initializeClimb();
-    initializeGorgon();
-    initializePixyCam();
-    initializeOverRoller();
+    Cargo.initialize();
+    RobotClimb.initialize();
+    Gorgon.initialize();
+    PixyCamera.startPixyCam();
+    OverRoller.initialize();
     initializeWinch();
     initializeLights();
   }
@@ -163,29 +154,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousPeriodic() {
-    updateSensors();
-    updateButtonStates();
-    updateTargetAngle();
-    if (MechanismsGamepad.Right_Stick_Down_State) {
-      currentPath = null;
-      TargetAngle = -1;
-      cargoMode = null;
-      step = 0;
-    }
-    if (ChassisGamepad.Right_Bumper_State) {
-      if (speedLimiter == 1) speedLimiter = .5;
-      else speedLimiter = 1;
-    }
-    updateGorgon();
-    updateCargoMechanism();
-    updateClimb();
-    updateOverRoller();
-    updateMove();
-    callForBall();
-    updateWinch();
-    updatePixyCam();
-    updateLights();
-    updateSmartDashboard();
+      teleopPeriodic();
   }
 
   /**
@@ -196,13 +165,13 @@ public class Robot extends TimedRobot {
     updateSensors();
     updateButtonStates();
     updateTargetAngle();
-    if (MechanismsGamepad.Right_Stick_Down_State) {
+    if (gp2.Right_Stick_Down_State) {
       currentPath = null;
       TargetAngle = -1;
       cargoMode = null;
       step = 0;
     }
-    if (ChassisGamepad.Right_Bumper_State) {
+    if (gp1.Right_Bumper_State) {
       if (speedLimiter == 1) speedLimiter = .5;
       else speedLimiter = 1;
     }
@@ -213,7 +182,7 @@ public class Robot extends TimedRobot {
     updateMove();
     callForBall();
     updateWinch();
-    updatePixyCam();
+    updatePixyCamera();
     updateLights();
     updateSmartDashboard();
   }
@@ -245,10 +214,10 @@ public class Robot extends TimedRobot {
   }
 
   private void initializeGamepad() {
-    ChassisGamepad = new Gamepad(0);
-    ChassisGamepad.putButtonStates();
-    MechanismsGamepad = new Gamepad(1);
-    MechanismsGamepad.putButtonStates();
+    gp1 = new Gamepad(0);
+    gp1.putButtonStates();
+    gp2 = new Gamepad(1);
+    gp2.putButtonStates();
   }
 
   public void initializeLights() {
@@ -257,7 +226,7 @@ public class Robot extends TimedRobot {
   }
 
   public void callForBall() {
-    if(ChassisGamepad.A_Button_State) {
+    if(gp1.A_Button_State) {
       if(ballCall) {
         ballCall = false;
       }
@@ -268,7 +237,10 @@ public class Robot extends TimedRobot {
   }
 
   public void updateLights() {
-    if(MechanismsGamepad.Left_Bumper_State || lightMode == -.55) {
+
+    double finalAngle = Math.abs(gyroAngle % 360);
+
+    if(gp2.Left_Bumper_State || lightMode == -.55) {
       lightMode = -.55;
     }
     else {
@@ -276,20 +248,17 @@ public class Robot extends TimedRobot {
         lightMode = .93;
       }
       else {
-        if (Math.abs(gyroAngle % 360) > 87 && Math.abs(gyroAngle % 360) < 93) {
-          lightMode = .77;
-        }
-        else if (Math.abs(gyroAngle % 360) > 177 && Math.abs(gyroAngle % 360) < 183) {
-          lightMode = .77;
-        }
-        else if (Math.abs(gyroAngle % 360) > 267 && Math.abs(gyroAngle % 360) < 273) {
-          lightMode = .77;
-        }
-        else if (Math.abs(gyroAngle % 360) > 357 || Math.abs(gyroAngle % 360) < 3) {
-          lightMode = .77;
-        }
+
+        if(Utils.isDataInRange(finalAngle, 85, 95) 
+          || Utils.isDataInRange(finalAngle,175, 185)
+          || Utils.isDataInRange(finalAngle, 265, 275)
+          || Utils.isDataInRange(finalAngle, 0, 5)
+          || Utils.isDataInRange(finalAngle, 355, 359)) {
+            lightMode = 0.77;
+          }
+
         else {
-          if(cargoMechanism.ballCaptured()) {
+          if(Cargo.ballCaptured()) {
             lightMode = .57;
           }
           else if(gorgonOpen) {
@@ -322,14 +291,9 @@ public class Robot extends TimedRobot {
     mGyroSensor.initializeGyroSensor();
   }
 
-  public void initializePixyCam() {
-    pixyCam = new PixyCamera();
-    pixyCam.startPixyCam();
-  }
-
-  public void updatePixyCam() {
-    if(ChassisGamepad.Left_Bumper_State) {
-      pixyCam.changeCam();
+  public void updatePixyCamera() {
+    if(gp1.Left_Bumper_State) {
+      PixyCamera.changeCam();
     }
   }
 
@@ -341,24 +305,24 @@ public class Robot extends TimedRobot {
   }
 
   public void updateButtonStates() {
-    ChassisGamepad.putButtonStates();
-    MechanismsGamepad.putButtonStates();
-    if(ChassisGamepad.Right_Bumper_State) {
+    gp1.putButtonStates();
+    gp2.putButtonStates();
+    if(gp1.Right_Bumper_State) {
       reverseDrive = !reverseDrive;
     }
   }
 
   public void updateSensors() {
     gyroAngle = mGyroSensor.getAngle();
-    cargoUltrasonicDistance = cargoMechanism.ultrasonicSensor.getRangeInches();
+    cargoUltrasonicDistance = Cargo.ultrasonicSensor.getRangeInches();
     lidarDistance = mLIDARSensor.getDistance();
   }
 
   //else contains true tank drive
   public void updateDrive() {
-    if(Math.abs(ChassisGamepad.Left_Stick_Y_Axis_State) < Statics.GAMEPAD_AXIS_TOLERANCE && Math.abs(ChassisGamepad.Right_Stick_Y_Axis_State) < Statics.GAMEPAD_AXIS_TOLERANCE) {
-      mLeftSpeed = Math.pow(ChassisGamepad.Left_Trigger_Axis_State, 3); //cubed
-      mRightSpeed = Math.pow(ChassisGamepad.Right_Trigger_Axis_State, 3); //cubed
+    if(Math.abs(gp1.Left_Stick_Y_Axis_State) < Statics.GAMEPAD_AXIS_TOLERANCE && Math.abs(gp1.Right_Stick_Y_Axis_State) < Statics.GAMEPAD_AXIS_TOLERANCE) {
+      mLeftSpeed = Math.pow(gp1.Left_Trigger_Axis_State, 3); //cubed
+      mRightSpeed = Math.pow(gp1.Right_Trigger_Axis_State, 3); //cubed
       if (mLeftSpeed > mRightSpeed) {
         mRightSpeed = mLeftSpeed;
       }
@@ -369,8 +333,8 @@ public class Robot extends TimedRobot {
     }
 
     else {
-      mLeftSpeed = Math.pow(ChassisGamepad.Left_Stick_Y_Axis_State, 3);
-      mRightSpeed = Math.pow(ChassisGamepad.Right_Stick_Y_Axis_State, 3);
+      mLeftSpeed = Math.pow(gp1.Left_Stick_Y_Axis_State, 3);
+      mRightSpeed = Math.pow(gp1.Right_Stick_Y_Axis_State, 3);
     }
     // if (reverseDrive) {
     //   mLeftSpeed = -mLeftSpeed;
@@ -380,40 +344,40 @@ public class Robot extends TimedRobot {
   }
 
   public void updateTargetAngle() {
-    if(ChassisGamepad.DPAD_State != -1) {
-      TargetAngle = ChassisGamepad.DPAD_State;
+    if(gp1.DPAD_State != -1) {
+      TargetAngle = gp1.DPAD_State;
       gyroPIDController.setSetpoint(TargetAngle);
     }
   }
 
     public void updateSmartDashboard() {
     //all Chassis Gamepad Values
-    SmartDashboard.putNumber("Chassis Controller Left Trigger Axis State", ChassisGamepad.Left_Trigger_Axis_State);
-    SmartDashboard.putNumber("Chassis Controller Right Trigger Axis State", ChassisGamepad.Right_Trigger_Axis_State);
-    SmartDashboard.putNumber("Chassis Controller Left Stick  Y Axis State", ChassisGamepad.Left_Stick_Y_Axis_State);
-    SmartDashboard.putNumber("Chassis Controller Right Stick Y Axis State", ChassisGamepad.Right_Stick_Y_Axis_State);
-    SmartDashboard.putBoolean("Chassis Controller A Button State", ChassisGamepad.A_Button_State);
-    SmartDashboard.putBoolean("Chassis Controller B Button State", ChassisGamepad.B_Button_State);
-    SmartDashboard.putBoolean("Chassis Controller X Button State", ChassisGamepad.X_Button_State);
-    SmartDashboard.putBoolean("Chassis Controller Y Button State", ChassisGamepad.Y_Button_State);
-    SmartDashboard.putBoolean("Chassis Controller Left Bumper State", ChassisGamepad.Left_Bumper_State);
-    SmartDashboard.putBoolean("Chassis Controller Right Bumper State", ChassisGamepad.Right_Bumper_State);
-    SmartDashboard.putNumber("Chassis Controller D-PAD", ChassisGamepad.DPAD_State);
+    SmartDashboard.putNumber("Chassis Controller Left Trigger Axis State", gp1.Left_Trigger_Axis_State);
+    SmartDashboard.putNumber("Chassis Controller Right Trigger Axis State", gp1.Right_Trigger_Axis_State);
+    SmartDashboard.putNumber("Chassis Controller Left Stick  Y Axis State", gp1.Left_Stick_Y_Axis_State);
+    SmartDashboard.putNumber("Chassis Controller Right Stick Y Axis State", gp1.Right_Stick_Y_Axis_State);
+    SmartDashboard.putBoolean("Chassis Controller A Button State", gp1.A_Button_State);
+    SmartDashboard.putBoolean("Chassis Controller B Button State", gp1.B_Button_State);
+    SmartDashboard.putBoolean("Chassis Controller X Button State", gp1.X_Button_State);
+    SmartDashboard.putBoolean("Chassis Controller Y Button State", gp1.Y_Button_State);
+    SmartDashboard.putBoolean("Chassis Controller Left Bumper State", gp1.Left_Bumper_State);
+    SmartDashboard.putBoolean("Chassis Controller Right Bumper State", gp1.Right_Bumper_State);
+    SmartDashboard.putNumber("Chassis Controller D-PAD", gp1.DPAD_State);
 
     //all Mechanism Gamepad Values
-    SmartDashboard.putNumber("Mechanisms Controller Left Trigger Axis State", MechanismsGamepad.Left_Trigger_Axis_State);
-    SmartDashboard.putNumber("Mechanisms Controller Right Trigger Axis State", MechanismsGamepad.Right_Trigger_Axis_State);
-    SmartDashboard.putNumber("Mechanisms Controller Left Stick Y Axis State", MechanismsGamepad.Left_Stick_Y_Axis_State);
-    SmartDashboard.putNumber("Mechanisms Controller Right Stick Y Axis State", MechanismsGamepad.Right_Stick_Y_Axis_State);
-    SmartDashboard.putBoolean("MechanismS Controller A Button State", MechanismsGamepad.A_Button_State);
-    SmartDashboard.putBoolean("Mechanisms Controller B Button State", MechanismsGamepad.B_Button_State);
-    SmartDashboard.putBoolean("Mechanisms Controller X Button State", MechanismsGamepad.X_Button_State);
-    SmartDashboard.putBoolean("Mechanisms Controller Y Button State", MechanismsGamepad.Y_Button_State);
-    SmartDashboard.putBoolean("Mechanisms Controller Left Bumper State", MechanismsGamepad.Left_Bumper_State);
-    SmartDashboard.putBoolean("Mechanisms Controller Right Bumper State", MechanismsGamepad.Right_Bumper_State);
-    SmartDashboard.putNumber("Mechanism Controller D-PAD", MechanismsGamepad.DPAD_State);
-    SmartDashboard.putNumber("Left Motor Amp output", overRoller.leftOverRollerMotorController.getOutputCurrent());
-    SmartDashboard.putNumber("Right Motor Amp output", overRoller.rightOverRollerMotorController.getOutputCurrent());
+    SmartDashboard.putNumber("Mechanisms Controller Left Trigger Axis State", gp2.Left_Trigger_Axis_State);
+    SmartDashboard.putNumber("Mechanisms Controller Right Trigger Axis State", gp2.Right_Trigger_Axis_State);
+    SmartDashboard.putNumber("Mechanisms Controller Left Stick Y Axis State", gp2.Left_Stick_Y_Axis_State);
+    SmartDashboard.putNumber("Mechanisms Controller Right Stick Y Axis State", gp2.Right_Stick_Y_Axis_State);
+    SmartDashboard.putBoolean("MechanismS Controller A Button State", gp2.A_Button_State);
+    SmartDashboard.putBoolean("Mechanisms Controller B Button State", gp2.B_Button_State);
+    SmartDashboard.putBoolean("Mechanisms Controller X Button State", gp2.X_Button_State);
+    SmartDashboard.putBoolean("Mechanisms Controller Y Button State", gp2.Y_Button_State);
+    SmartDashboard.putBoolean("Mechanisms Controller Left Bumper State", gp2.Left_Bumper_State);
+    SmartDashboard.putBoolean("Mechanisms Controller Right Bumper State", gp2.Right_Bumper_State);
+    SmartDashboard.putNumber("Mechanism Controller D-PAD", gp2.DPAD_State);
+    SmartDashboard.putNumber("Left Motor Amp output", OverRoller.left.getOutputCurrent());
+    SmartDashboard.putNumber("Right Motor Amp output", OverRoller.right.getOutputCurrent());
     SmartDashboard.putNumber("Front Left Motor", mFrontLeft.getOutputCurrent());
     SmartDashboard.putNumber("Front Right Motor", mFrontRight.getOutputCurrent());
     SmartDashboard.putNumber("Back Left Motor", mRearLeft.getOutputCurrent());
@@ -424,12 +388,12 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Gyro Angle in Degrees", gyroAngle);
     SmartDashboard.putNumber("Left Tank Drive Speed", mLeftSpeed);
     SmartDashboard.putNumber("Right Tank Drive Speed", mRightSpeed);
-    SmartDashboard.putBoolean("Cargo in Place", cargoMechanism.ultrasonicSensor.getRangeInches() < Statics.CARGO_HOLD_DISTANCE);
-    SmartDashboard.putNumber("cargo sensor distance", cargoMechanism.ultrasonicSensor.getRangeInches());
-    SmartDashboard.putBoolean("cargo sensor valid", cargoMechanism.ultrasonicSensor.isRangeValid());
+    SmartDashboard.putBoolean("Cargo in Place", Cargo.ultrasonicSensor.getRangeInches() < Statics.CARGO_HOLD_DISTANCE);
+    SmartDashboard.putNumber("cargo sensor distance", Cargo.ultrasonicSensor.getRangeInches());
+    SmartDashboard.putBoolean("cargo sensor valid", Cargo.ultrasonicSensor.isRangeValid());
     SmartDashboard.putBoolean("Compresor Running", mCompressor.getPressureSwitchValue());
-    SmartDashboard.putNumber("Left Overroller Encoder", overRoller.getLeftEncoder());
-    SmartDashboard.putNumber("Right Overroller Encoder", overRoller.getRightEncoder());
+    SmartDashboard.putNumber("Left Overroller Encoder", OverRoller.getLeftEncoder());
+    SmartDashboard.putNumber("Right Overroller Encoder", OverRoller.getRightEncoder());
     SmartDashboard.putNumber("Winch Encoder", winch.getWinchEncoderValue());    
     } 
 
@@ -469,11 +433,6 @@ public class Robot extends TimedRobot {
       }
     }
 
-    public void initializeCargoMechanism() {
-      cargoMechanism = new CargoMechanism();
-      cargoMechanism.initialize();
-    }
-
     public void runPresetPaths() {
       if(irSensor.tapeDetected()) {
         if (step == 0) {
@@ -504,43 +463,38 @@ public class Robot extends TimedRobot {
 
     public void updateCargoMechanism() {
       if (cargoMode != null) {
-        cargoMechanism.runCargo();
+        Cargo.runCargo();
       }
-      else if(MechanismsGamepad.A_Button_State) {
+      else if(gp2.A_Button_State) {
         cargoMode = CargoMode.LOWPICKUP;
-        cargoMechanism.runCargo();
+        Cargo.runCargo();
       }
-      else if(MechanismsGamepad.B_Button_State) {
+      else if(gp2.B_Button_State) {
         cargoMode = CargoMode.HIGHSHOOT;
-        cargoMechanism.runCargo();
+        Cargo.runCargo();
       }
-      else if(MechanismsGamepad.X_Button_State) {
+      else if(gp2.X_Button_State) {
         cargoMode = CargoMode.LOWSHOOT;
-        cargoMechanism.runCargo();
+        Cargo.runCargo();
       }
-      else if(MechanismsGamepad.Y_Button_State) {
+      else if(gp2.Y_Button_State) {
         cargoMode = CargoMode.HIGHPICKUP;
-        cargoMechanism.runCargo();
+        Cargo.runCargo();
       }
       else {
-        cargoMechanism.stopCargo();
+        Cargo.stopCargo();
       }
-    }
-
-    public void initializeOverRoller() {
-      overRoller = new OverRoller();
-      overRoller.initialize();
     }
 
     public void updateOverRoller() {
-      if(MechanismsGamepad.DPAD_State == 0 && overRoller.getLeftEncoder() > 21 && overRoller.getRightEncoder() < -21) {
-        overRoller.raiseArms();
+      if(gp2.DPAD_State == 0 && OverRoller.getLeftEncoder() > 21 && OverRoller.getRightEncoder() < -21) {
+        OverRoller.raiseArms();
       }
-      else if(MechanismsGamepad.DPAD_State == 180) {
-        overRoller.lowerArms();
+      else if(gp2.DPAD_State == 180) {
+        OverRoller.lowerArms();
       }
       else {
-        overRoller.stopArms();
+        OverRoller.stopArms();
       }
     }
 
@@ -550,10 +504,10 @@ public class Robot extends TimedRobot {
     }
 
     public void updateWinch() {
-      if(MechanismsGamepad.Right_Stick_Y_Axis_State > .2 && winch.getWinchEncoderValue() > -10000) {
+      if(gp2.Right_Stick_Y_Axis_State > .2 && winch.getWinchEncoderValue() > -10000) {
         winch.raiseGorgon();
       }
-      else if(MechanismsGamepad.Right_Stick_Y_Axis_State < -.2 && winch.getWinchEncoderValue() < -10) {
+      else if(gp2.Right_Stick_Y_Axis_State < -.2 && winch.getWinchEncoderValue() < -10) {
        winch.lowerGorgon();
       }
       else {
@@ -561,34 +515,24 @@ public class Robot extends TimedRobot {
       }
     }
 
-    public void initializeGorgon() {
-      gorgon = new Gorgon();
-      gorgon.initialize();
-    }
-
     public void updateGorgon() {
-      if(MechanismsGamepad.DPAD_State == 90) {
-        gorgon.openGorgon();
+      if(gp2.DPAD_State == 90) {
+        Gorgon.openGorgon();
         gorgonOpen = true;
       }
-      if(MechanismsGamepad.DPAD_State == 270) {
-        gorgon.closeGorgon();
+      if(gp2.DPAD_State == 270) {
+        Gorgon.closeGorgon();
         gorgonOpen = false;
       }
     }
 
-    public void initializeClimb() {
-      climb = new RobotClimb();
-      climb.initialize();
-    }
-
     public void updateClimb() {
-      if(MechanismsGamepad.Left_Bumper_State) {
+      if(gp2.Left_Bumper_State) {
         if (climbOpen) {
-          climb.closePenumatics();
+          RobotClimb.closePenumatics();
         }
         else {
-          climb.openPenumatics();
+          RobotClimb.openPenumatics();
         }
         climbOpen = !climbOpen;
       }

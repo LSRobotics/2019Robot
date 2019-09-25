@@ -2,30 +2,30 @@ package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
-public class CargoMechanism {
+public class Cargo {
 
-    WPI_TalonSRX lowCargoMotorController; 
-    WPI_TalonSRX highCargoMotorController;
+    static WPI_TalonSRX lowCargoMotorController; 
+    static WPI_TalonSRX highCargoMotorController;
 
-    int timer = 0;
+    static int timer = 0;
 
-    public UltrasonicSensor ultrasonicSensor;
+    static public UltrasonicSensor ultrasonicSensor;
 
-    public void initialize() {
+    static public void initialize() {
         ultrasonicSensor = new UltrasonicSensor(Statics.Cargo_Ultrasonic_PingChannel, Statics.Cargo_Ultrasonic_EchoChannel);
         ultrasonicSensor.startAutomaticMode();
         lowCargoMotorController = new WPI_TalonSRX(Statics.Low_Cargo_CAN_ID);
         highCargoMotorController = new WPI_TalonSRX(Statics.High_Cargo_CAN_ID);
     }
 
-    public boolean ballCaptured() {
+    static public boolean ballCaptured() {
         if(ultrasonicSensor.getRangeInches() < 6) {
             return true;
         }
         return false;
     }
 
-    public void runCargo() {
+    static public void runCargo() {
         if (Robot.cargoMode == CargoMode.LOWPICKUP) {
             lowCargoPickup();
         }
@@ -44,7 +44,7 @@ public class CargoMechanism {
         }
     }
 
-    public void lowCargoPickup() {
+    static public void lowCargoPickup() {
         if(ultrasonicSensor.getRangeInches() > Statics.CARGO_HOLD_DISTANCE) {
             lowCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
         }
@@ -53,7 +53,7 @@ public class CargoMechanism {
         }
     }
 
-    public void highCargoPickup() {
+    static public void highCargoPickup() {
         if(ultrasonicSensor.getRangeInches() > Statics.CARGO_HOLD_DISTANCE) {
             highCargoMotorController.set(-Statics.High_Cargo_Intake_Motor_Speed);
         }
@@ -62,7 +62,7 @@ public class CargoMechanism {
         }
     }
 
-    public void lowCargoShoot() {
+    static public void lowCargoShoot() {
         if(ultrasonicSensor.getRangeInches() < Statics.CARGO_HOLD_DISTANCE) {
             lowCargoMotorController.set(-Statics.Low_Cargo_Shoot_Motor_Speed);
             highCargoMotorController.set(-Statics.Low_Cargo_Shoot_High_Motor_Speed);
@@ -78,7 +78,7 @@ public class CargoMechanism {
         }
     }
 
-    public void highCargoShoot() {
+    static public void highCargoShoot() {
         if(ultrasonicSensor.getRangeInches() < Statics.CARGO_HOLD_DISTANCE) {
             highCargoMotorController.set(Statics.High_Cargo_Motor_Speed);
             lowCargoMotorController.set(-.7);
@@ -94,7 +94,7 @@ public class CargoMechanism {
         }
     }
 
-    public void stopCargo() {
+    static public void stopCargo() {
         lowCargoMotorController.set(0);
         highCargoMotorController.set(0);
     }

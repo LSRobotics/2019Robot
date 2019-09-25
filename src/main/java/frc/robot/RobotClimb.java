@@ -11,19 +11,19 @@ public class RobotClimb {
     
     // WPI_TalonSRX scooterMotorController;
     // CANSparkMax climbMotorController;
-    DoubleSolenoid climbSolenoid;
+    static DoubleSolenoid climbSolenoid;
 
-    public void initialize() {
+    static public void initialize() {
         // scooterMotorController = new WPI_TalonSRX(Statics.Scooter_Climb_CAN_ID);
         // climbMotorController = new CANSparkMax(Statics.Climb_Wheels_CAN_ID, MotorType.kBrushless);
         climbSolenoid = new DoubleSolenoid(Statics.Robot_Climb_Solenoid_Forward_Channel, Statics.Robot_Climb_Solenoid_Reverse_Channel);
     }
 
-    public void openPenumatics() {
+    static public void openPenumatics() {
         climbSolenoid.set(Value.kForward);
     }
 
-    public void closePenumatics() {
+    static public void closePenumatics() {
         climbSolenoid.set(Value.kReverse);
     }
 

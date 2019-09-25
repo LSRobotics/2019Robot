@@ -5,41 +5,41 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 public class OverRoller {
 
-    CANSparkMax leftOverRollerMotorController;
-    CANSparkMax rightOverRollerMotorController;
+    static CANSparkMax left;
+    static CANSparkMax right;
     
-    public void initialize() {
-        leftOverRollerMotorController = new CANSparkMax(Statics.Left_Over_Roller_CAN_ID, MotorType.kBrushless);
-        rightOverRollerMotorController = new CANSparkMax(Statics.Right_Over_Roller_CAN_ID, MotorType.kBrushless);
+    static public void initialize() {
+        left = new CANSparkMax(Statics.Left_Over_Roller_CAN_ID, MotorType.kBrushless);
+        right = new CANSparkMax(Statics.Right_Over_Roller_CAN_ID, MotorType.kBrushless);
         
-        leftOverRollerMotorController.restoreFactoryDefaults();
-        rightOverRollerMotorController.restoreFactoryDefaults();
+        left.restoreFactoryDefaults();
+        right.restoreFactoryDefaults();
 
-        leftOverRollerMotorController.getEncoder().setPosition(0);
-        rightOverRollerMotorController.getEncoder().setPosition(0);
+        left.getEncoder().setPosition(0);
+        right.getEncoder().setPosition(0);
     }
 
-    public void lowerArms() {
-        leftOverRollerMotorController.set(Statics.Left_Over_Roller_Motor_Speed);
-        rightOverRollerMotorController.set(-Statics.Right_Over_Roller_Motor_Speed);
+    static public void lowerArms() {
+        left.set(Statics.Left_Over_Roller_Motor_Speed);
+        right.set(-Statics.Right_Over_Roller_Motor_Speed);
     }
 
-    public void raiseArms() {
-        leftOverRollerMotorController.set(-Statics.Left_Over_Roller_Motor_Speed);
-        rightOverRollerMotorController.set(Statics.Right_Over_Roller_Motor_Speed);
+    static public void raiseArms() {
+        left.set(-Statics.Left_Over_Roller_Motor_Speed);
+        right.set(Statics.Right_Over_Roller_Motor_Speed);
     }
 
-    public void stopArms() {
-        leftOverRollerMotorController.set(0);
-        rightOverRollerMotorController.set(0);
+    static public void stopArms() {
+        left.set(0);
+        right.set(0);
     }
 
-    public double getLeftEncoder() {
-        return leftOverRollerMotorController.getEncoder().getPosition();
+    static public double getLeftEncoder() {
+        return left.getEncoder().getPosition();
     }
 
-    public double getRightEncoder() {
-        return rightOverRollerMotorController.getEncoder().getPosition();
+    static public double getRightEncoder() {
+        return right.getEncoder().getPosition();
     }
 
 }
