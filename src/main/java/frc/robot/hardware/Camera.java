@@ -1,11 +1,10 @@
-package frc.robot;
+package frc.robot.hardware;
 
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoSink;
 
-public class PixyCamera {
+public class Camera {
 
     static UsbCamera cam0;
     static UsbCamera cam1;

@@ -1,15 +1,17 @@
-package frc.robot;
+package frc.robot.software;
 
 public class Statics {
     
-    public final static int Front_Left_CAN_ID = 10;
-    public final static int Rear_Left_CAN_ID = 11;
 
-    public final static int Front_Right_CAN_ID = 6;
-    public final static int Rear_Right_CAN_ID = 7;
+    //CAN Devices
+    public final static int CHASSIS_L1 = 10;
+    public final static int CHASSIS_L2 = 11;
 
-    public final static int Low_Cargo_CAN_ID = 8;
-    public final static int High_Cargo_CAN_ID = 9;
+    public final static int CHASSIS_R1 = 6;
+    public final static int CHASSIS_R2 = 7;
+
+    public final static int LOW_CARGO = 8;
+    public final static int HIGH_CARGO = 9;
 
     public final static int Left_Over_Roller_CAN_ID = 4;
     public final static int Right_Over_Roller_CAN_ID = 1;
@@ -38,11 +40,6 @@ public class Statics {
     public final static int Gorgon_Solenoid_Forward_Channel = 0;
     public final static int Gorgon_Solenoid_Reverse_Channel = 1;
 
-    public final static double PID_GYRO_TOLERANCE = 2;
-    public final static double GYRO_P = .2;
-    public final static double GYRO_I = 0;
-    public final static double GYRO_D = .2;
-    public final static double GYRO_F = 0;
 
     public final static double GAMEPAD_AXIS_TOLERANCE = 0.1;
 

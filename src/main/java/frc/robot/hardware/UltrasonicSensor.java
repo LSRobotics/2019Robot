@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.hardware;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DigitalOutput;

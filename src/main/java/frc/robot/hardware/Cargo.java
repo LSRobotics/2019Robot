@@ -1,11 +1,17 @@
-package frc.robot;
+package frc.robot.hardware;
 
+import frc.robot.software.*; 
+import frc.robot.*;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 public class Cargo {
 
-    static WPI_TalonSRX lowCargoMotorController; 
-    static WPI_TalonSRX highCargoMotorController;
+    public enum Mode {
+        LOWPICKUP, HIGHPICKUP, LOWSHOOT, HIGHSHOOT;
+    }
+
+    static WPI_TalonSRX low; 
+    static WPI_TalonSRX high;
 
     static int timer = 0;
 
@@ -14,8 +20,8 @@ public class Cargo {
     static public void initialize() {
         ultrasonicSensor = new UltrasonicSensor(Statics.Cargo_Ultrasonic_PingChannel, Statics.Cargo_Ultrasonic_EchoChannel);
         ultrasonicSensor.startAutomaticMode();
-        lowCargoMotorController = new WPI_TalonSRX(Statics.Low_Cargo_CAN_ID);
-        highCargoMotorController = new WPI_TalonSRX(Statics.High_Cargo_CAN_ID);
+        low = new WPI_TalonSRX(Statics.LOW_CARGO);
+        high = new WPI_TalonSRX(Statics.HIGH_CARGO);
     }
 
     static public boolean ballCaptured() {
@@ -26,16 +32,16 @@ public class Cargo {
     }
 
     static public void runCargo() {
-        if (Robot.cargoMode == CargoMode.LOWPICKUP) {
+        if (Robot.cargoMode == Mode.LOWPICKUP) {
             lowCargoPickup();
         }
-        else if (Robot.cargoMode == CargoMode.LOWSHOOT) {
+        else if (Robot.cargoMode == Mode.LOWSHOOT) {
             lowCargoShoot();
         }
-        else if (Robot.cargoMode == CargoMode.HIGHPICKUP) {
+        else if (Robot.cargoMode == Mode.HIGHPICKUP) {
             highCargoPickup();
         }
-        else if (Robot.cargoMode == CargoMode.HIGHSHOOT) {
+        else if (Robot.cargoMode == Mode.HIGHSHOOT) {
             highCargoShoot();
         }
         else {
@@ -46,7 +52,7 @@ public class Cargo {
 
     static public void lowCargoPickup() {
         if(ultrasonicSensor.getRangeInches() > Statics.CARGO_HOLD_DISTANCE) {
-            lowCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
+            low.set(-Statics.Low_Cargo_Motor_Speed);
         }
         else {
             Robot.cargoMode = null;
@@ -55,7 +61,7 @@ public class Cargo {
 
     static public void highCargoPickup() {
         if(ultrasonicSensor.getRangeInches() > Statics.CARGO_HOLD_DISTANCE) {
-            highCargoMotorController.set(-Statics.High_Cargo_Intake_Motor_Speed);
+            high.set(-Statics.High_Cargo_Intake_Motor_Speed);
         }
         else {
             Robot.cargoMode = null;
@@ -64,12 +70,12 @@ public class Cargo {
 
     static public void lowCargoShoot() {
         if(ultrasonicSensor.getRangeInches() < Statics.CARGO_HOLD_DISTANCE) {
-            lowCargoMotorController.set(-Statics.Low_Cargo_Shoot_Motor_Speed);
-            highCargoMotorController.set(-Statics.Low_Cargo_Shoot_High_Motor_Speed);
+            low.set(-Statics.Low_Cargo_Shoot_Motor_Speed);
+            high.set(-Statics.Low_Cargo_Shoot_High_Motor_Speed);
         }
         else if (timer < (2 * Statics.SEC_TO_INTERVAL)) {
-            lowCargoMotorController.set(-Statics.Low_Cargo_Shoot_Motor_Speed);
-            highCargoMotorController.set(Statics.Low_Cargo_Motor_Speed);
+            low.set(-Statics.Low_Cargo_Shoot_Motor_Speed);
+            high.set(Statics.Low_Cargo_Motor_Speed);
             timer++;
         }
         else {
@@ -80,12 +86,12 @@ public class Cargo {
 
     static public void highCargoShoot() {
         if(ultrasonicSensor.getRangeInches() < Statics.CARGO_HOLD_DISTANCE) {
-            highCargoMotorController.set(Statics.High_Cargo_Motor_Speed);
-            lowCargoMotorController.set(-.7);
+            high.set(Statics.High_Cargo_Motor_Speed);
+            low.set(-.7);
         }
         else if (timer < (2 * Statics.SEC_TO_INTERVAL)) {
-            highCargoMotorController.set(Statics.High_Cargo_Motor_Speed);
-            lowCargoMotorController.set(-Statics.Low_Cargo_Motor_Speed);
+            high.set(Statics.High_Cargo_Motor_Speed);
+            low.set(-Statics.Low_Cargo_Motor_Speed);
             timer++;
         }
         else {
@@ -95,11 +101,7 @@ public class Cargo {
     }
 
     static public void stopCargo() {
-        lowCargoMotorController.set(0);
-        highCargoMotorController.set(0);
+        low.set(0);
+        high.set(0);
     }
-}
-
-enum CargoMode {
-    LOWPICKUP, HIGHPICKUP, LOWSHOOT, HIGHSHOOT;
 }
