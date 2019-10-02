@@ -42,7 +42,7 @@ public class Robot extends TimedRobot {
   public boolean ballCall;
   public boolean RobotClimbLights = false;
 
-  public double speedLimiter = 1;
+  public boolean isLowSpd = false;
   
   @Override
   public void robotInit() {
@@ -82,12 +82,8 @@ public class Robot extends TimedRobot {
     gp2.fetchData();
   
     updateSensors();
-    if (gp2.isKeyHeld(Key.J_LEFT_DOWN)) {
+    if (gp2.isKeyToggled(Key.J_RIGHT_DOWN)) {
       cargoMode = null;
-    }
-    if (gp1.isKeyToggled(Key.RB)) {
-      if (speedLimiter == 1) speedLimiter = .5;
-      else speedLimiter = 1;
     }
     updateGorgon();
     updateCargoMechanism();
@@ -171,6 +167,12 @@ public class Robot extends TimedRobot {
     //Reverse Drive
     if(gp1.isKeyToggled(Key.RB)) {
       Chassis.flip();
+    }
+
+    if(gp1.isKeyToggled(Key.Y)) {
+      isLowSpd = !isLowSpd;
+
+      Chassis.setSpeedFactor(isLowSpd? 0.5 : 1);
     }
 
     //NFS Drive control
