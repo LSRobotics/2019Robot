@@ -9,7 +9,7 @@ public class Gorgon {
     static DoubleSolenoid gorgon;
 
     static public void initialize() {
-        gorgon = new DoubleSolenoid(Statics.Gorgon_Solenoid_Forward_Channel, Statics.Gorgon_Solenoid_Reverse_Channel);
+        gorgon = new DoubleSolenoid(Statics.PCM_GORGON_F, Statics.PCM_GORGON_R);
         gorgon.set(Value.kOff);
     }
 

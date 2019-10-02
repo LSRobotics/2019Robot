@@ -7,6 +7,8 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 public class OverRoller {
 
+    final static double OVERROLLER_SPD = .5;
+
     static CANSparkMax left;
     static CANSparkMax right;
     
@@ -19,16 +21,18 @@ public class OverRoller {
 
         left.getEncoder().setPosition(0);
         right.getEncoder().setPosition(0);
+
+        right.setInverted(true);
     }
 
     static public void lowerArms() {
-        left.set(Statics.Left_Over_Roller_Motor_Speed);
-        right.set(-Statics.Right_Over_Roller_Motor_Speed);
+        left.set(OVERROLLER_SPD);
+        right.set(OVERROLLER_SPD);
     }
 
     static public void raiseArms() {
-        left.set(-Statics.Left_Over_Roller_Motor_Speed);
-        right.set(Statics.Right_Over_Roller_Motor_Speed);
+        left.set(-OVERROLLER_SPD);
+        right.set(-OVERROLLER_SPD);
     }
 
     static public void stopArms() {

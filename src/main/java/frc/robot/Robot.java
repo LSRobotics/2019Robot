@@ -19,10 +19,6 @@ import frc.robot.hardware.Gamepad.Key;
 public class Robot extends TimedRobot {
 
   static public Gamepad gp1, gp2;
-  
-  public static boolean reverseDrive = false;
-
-  public static int step = 0;
 
   public static Cargo.Mode cargoMode = null;
 
@@ -36,11 +32,10 @@ public class Robot extends TimedRobot {
 
   public static Compressor mCompressor;
 
-  public static boolean gorgonOpen = false;
-  public static boolean climbOpen = false;
+  public static boolean gorgonOpen = false,
+                        climbOpen = false;
   public double lightMode;
   public boolean ballCall;
-  public boolean RobotClimbLights = false;
 
   public boolean isLowSpd = false;
   
@@ -60,6 +55,7 @@ public class Robot extends TimedRobot {
     OverRoller.initialize();
     Winch.initialize();
     Lights.initialize();
+    Utils.initialize(this);
   }
 
   @Override
@@ -80,26 +76,33 @@ public class Robot extends TimedRobot {
 
     gp1.fetchData();
     gp2.fetchData();
-  
-    updateSensors();
-    if (gp2.isKeyToggled(Key.J_RIGHT_DOWN)) {
-      cargoMode = null;
-    }
-    updateGorgon();
-    updateCargoMechanism();
-    updateClimb();
-    updateOverRoller();
-    updateDrive();
-    callForBall();
-    updateWinch();
-    updatePixyCamera();
-    updateLights();
-    updateSmartDashboard();
+   
+    updateBottom();
+    updateTop();
   }
 
   @Override
   public void testPeriodic() {
+    teleopPeriodic();    
+  }
 
+  public void updateTop() {
+
+    if (gp2.isKeyToggled(Key.J_RIGHT_DOWN)) {
+      cargoMode = null;
+    }
+    updateSensors(); 
+    updateCargoMechanism();
+    updateClimb();
+    updateOverRoller();
+    callForBall();
+    updateWinch();
+    updatePixyCamera();
+    updateGorgon();
+
+    //Not necessarily "Top" but does not belong to chassis
+    updateLights();
+    updateSmartDashboard();
   }
 
   public void callForBall() {
@@ -151,7 +154,7 @@ public class Robot extends TimedRobot {
     Lights.lightChange(lightMode);
   }
   public void updatePixyCamera() {
-    if(gp1.isKeyToggled(Key.LB)) {
+    if(gp1.isKeyToggled(Key.Y)) {
       Camera.changeCam();
     }
   }
@@ -162,21 +165,24 @@ public class Robot extends TimedRobot {
   }
 
   //else contains true tank drive
-  public void updateDrive() {
+  public void updateBottom() {
 
-    //Reverse Drive
+    //Low Speed Mode
     if(gp1.isKeyToggled(Key.RB)) {
-      Chassis.flip();
-    }
-
-    if(gp1.isKeyToggled(Key.Y)) {
       isLowSpd = !isLowSpd;
 
       Chassis.setSpeedFactor(isLowSpd? 0.5 : 1);
     }
 
-    //NFS Drive control
-    if(gp1.isKeysChanged(Key.LT,Key.RT,Key.J_LEFT_X)) {
+    //Assistive Autonomous
+    if(gp1.isKeyToggled(Key.DPAD_LEFT)) {
+      Utils.turnRobot(true);  
+    }
+    else if(gp1.isKeyToggled(Key.DPAD_RIGHT)) {
+      Utils.turnRobot(false);
+    }
+
+    else if(gp1.isKeysChanged(Key.LT,Key.RT,Key.J_LEFT_X)) { //NFS Drive control
       double y = Utils.mapAnalog(-gp1.getValue(Key.RT)) - Utils.mapAnalog(-gp1.getValue(Key.LT));
       double x = Utils.mapAnalog(-gp1.getValue(Key.J_LEFT_X));
       Chassis.drive(y,x);
@@ -187,6 +193,11 @@ public class Robot extends TimedRobot {
     } 
 
     public void updateCargoMechanism() {
+
+      if(gp2.isKeyHeld(Key.J_RIGHT_DOWN)) {
+        Cargo.stopCargo();
+      }
+
       if (cargoMode != null) {
         Cargo.runCargo();
       }

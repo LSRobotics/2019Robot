@@ -29,16 +29,16 @@ public class Statics {
 
     public final static int Scooter_Climb_CAN_ID = 3;
     public final static int Climb_Wheels_CAN_ID = 2;
-    public final static int Robot_Climb_Solenoid_Forward_Channel = 2;
-    public final static int Robot_Climb_Solenoid_Reverse_Channel = 3;
+    public final static int PCM_CLIMB_F = 2;
+    public final static int PCM_CLIMB_R = 3;
 
-    public final static int Limit_Switch_Channel = 2;
+    public final static int LIMIT_SWITCH = 2;
 
-    public final static int left_Over_Roller_Encoder_A_Channel = 0;
-    public final static int left_Over_Roller_Encoder_B_Channel = 1;
+    public final static int OVERROLLER_ENCODER_L_A = 0;
+    public final static int OVERROLLER_ENCODER_L_B = 1;
 
-    public final static int Gorgon_Solenoid_Forward_Channel = 0;
-    public final static int Gorgon_Solenoid_Reverse_Channel = 1;
+    public final static int PCM_GORGON_F = 0;
+    public final static int PCM_GORGON_R = 1;
 
 
     public final static double GAMEPAD_AXIS_TOLERANCE = 0.1;
@@ -49,10 +49,6 @@ public class Statics {
     public final static double Low_Cargo_Shoot_Motor_Speed = 1;
     public final static double Low_Cargo_Shoot_High_Motor_Speed = .5;
     public final static double High_Cargo_Motor_Speed = .6;
-    ;
-
-    public final static double Left_Over_Roller_Motor_Speed = .5;
-    public final static double Right_Over_Roller_Motor_Speed = .5;
 
     public final static double CARGO_HOLD_DISTANCE = 6;
 

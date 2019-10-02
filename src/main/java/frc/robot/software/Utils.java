@@ -13,6 +13,11 @@ public class Utils {
     private static String gameData;
     final public static int DEFAULT_BREAK_TIME = 1200;
     public static boolean isOutputEnabled = false;
+    public static Robot main;
+
+    public static void initialize(Robot mainRobot) {
+        main = mainRobot;
+    }
 
     public static void fetchGameData() {
 
@@ -64,7 +69,10 @@ public class Utils {
         try {
             report("Idle for " + millisecond + " ms");
             while ((System.currentTimeMillis() - time) < millisecond) {
-                if (Robot.gp1.isGamepadChanged() || Robot.gp2.isGamepadChanged()) {
+                
+                Robot.gp1.fetchData();
+
+                if (Robot.gp1.isGamepadChanged()) {
                     report("Interrupted by controller actions");
                     return false;
                 }
@@ -80,29 +88,46 @@ public class Utils {
         return true;
     }
 
-    public static boolean turnRobot(double power, double angle) {
-
-        final double ANGLE_TOLERANCE = 1;
+    public static boolean turnRobot(boolean isLeft) {
         
-        if(angle > 0) {power = Math.abs(power);}
-        else {
-            power = -Math.abs(power);
+        double power = isLeft? -0.3 : 0.3;
+        double angleFactor = Math.abs(Gyro.getAbsAngle()) / 90;
+
+        double leftAngle, rightAngle;
+
+        //Determine Angles
+        if(angleFactor > 0 && angleFactor < 1) {
+            leftAngle = 0;
+            rightAngle = 90;
         }
-
-        double targetAngle = Gyro.getAngle() + angle;
-
-        Chassis.drive(0, power);
-
-        while(Math.abs(targetAngle - Gyro.getAngle()) > ANGLE_TOLERANCE) {
-            if(Robot.gp1.isGamepadChanged() || Robot.gp2.isGamepadChanged()) {
-                return false;
-            }
+        else if(angleFactor > 3) {
+            leftAngle = 270;
+            rightAngle = 0;
+        }
+        else {
+            leftAngle = 90 * Math.floor(angleFactor);
+            rightAngle = leftAngle + 90;
         }
 
         Chassis.stop();
+        Chassis.drive(0,power);
+
+        while(!isDataClose(Gyro.getAbsAngle(), leftAngle, 2) && !isDataClose(Gyro.getAbsAngle(), rightAngle, 2)) {
+            Robot.gp1.fetchData();
+            Robot.gp2.fetchData();
+            
+            //Interrupt action if LB in GP1 is toggled
+            if(Robot.gp1.isKeyToggled(Gamepad.Key.LB)) {
+                Chassis.stop();
+                return false;
+            }
+
+            main.updateTop();
+        }        
+        
+        Chassis.stop();
 
         return true;
-        
     }
 
     public static double estimateDriveTime(double speed, double distance) {
@@ -144,6 +169,10 @@ public class Utils {
         }
         
         return (value == min || value > min) && (value < max || value == max);
+    }
+
+    public static boolean isDataClose(double value, double expected, double tolerance) {
+        return Math.abs(value - expected) < tolerance || (Math.abs(value-expected)) == tolerance;
     }
 
     public static double mapAnalog(double value) {

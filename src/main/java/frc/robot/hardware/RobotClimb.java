@@ -18,7 +18,7 @@ public class RobotClimb {
     static public void initialize() {
         // scooterMotorController = new WPI_TalonSRX(Statics.Scooter_Climb_CAN_ID);
         // climbMotorController = new CANSparkMax(Statics.Climb_Wheels_CAN_ID, MotorType.kBrushless);
-        climber = new DoubleSolenoid(Statics.Robot_Climb_Solenoid_Forward_Channel, Statics.Robot_Climb_Solenoid_Reverse_Channel);
+        climber = new DoubleSolenoid(Statics.PCM_CLIMB_F, Statics.PCM_CLIMB_R);
     }
 
     static public void openPenumatics() {
