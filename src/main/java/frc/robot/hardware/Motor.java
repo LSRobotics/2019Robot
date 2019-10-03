@@ -43,17 +43,15 @@ public class Motor {
         case TALON_SRX_CAN:
             motor = new WPI_TalonSRX(port);
 
-            //Not really sure what this does but I am leaving this for now.
-            ((WPI_TalonSRX)motor).configFactoryDefault();
+            // Not really sure what this does but I am leaving this for now.
+            ((WPI_TalonSRX) motor).configFactoryDefault();
         default:
             break;
         }
 
-        if(model == Model.TALON_SRX_CAN) {
-            ((WPI_TalonSRX)motor).configFactoryDefault();
+        if (model == Model.TALON_SRX_CAN) {
+            ((WPI_TalonSRX) motor).configFactoryDefault();
         }
-
-        
 
         motor.setInverted(isReverse);
     }

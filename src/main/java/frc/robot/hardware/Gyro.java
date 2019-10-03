@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.SPI;
 
 public class Gyro {
-    
+
     public static ADXRS450_Gyro gyro;
 
     public static void initialize() {

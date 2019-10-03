@@ -32,7 +32,7 @@ public class Gorgon {
     static public void actuate() {
         isForward = !isForward;
 
-        gorgon.set(isForward? Value.kForward : Value.kReverse);
+        gorgon.set(isForward ? Value.kForward : Value.kReverse);
     }
 
 }

@@ -1,7 +1,6 @@
 package frc.robot.hardware;
 
 import edu.wpi.first.wpilibj.Spark;
-import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.software.*;
 
 public class Lights {

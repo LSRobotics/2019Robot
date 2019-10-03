@@ -7,14 +7,14 @@ import edu.wpi.first.wpilibj.Ultrasonic;
 public class UltrasonicSensor extends Ultrasonic {
 
     public UltrasonicSensor(int pingChannel, int echoChannel) {
-        
-        super(pingChannel,echoChannel,Ultrasonic.Unit.kInches);
+
+        super(pingChannel, echoChannel, Ultrasonic.Unit.kInches);
     }
 
     public UltrasonicSensor getActualSensor() {
         return this;
     }
-    
+
     public void destroySensor() {
         this.close();
     }

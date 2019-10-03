@@ -69,7 +69,7 @@ public class Utils {
         try {
             report("Idle for " + millisecond + " ms");
             while ((System.currentTimeMillis() - time) < millisecond) {
-                
+
                 Robot.gp1.fetchData();
 
                 if (Robot.gp1.isGamepadChanged()) {
@@ -89,42 +89,40 @@ public class Utils {
     }
 
     public static boolean turnRobot(boolean isLeft) {
-        
-        double power = isLeft? -0.3 : 0.3;
+
+        double power = isLeft ? -0.3 : 0.3;
         double angleFactor = Math.abs(Gyro.getAbsAngle()) / 90;
 
         double leftAngle, rightAngle;
 
-        //Determine Angles
-        if(angleFactor > 0 && angleFactor < 1) {
+        // Determine Angles
+        if (angleFactor > 0 && angleFactor < 1) {
             leftAngle = 0;
             rightAngle = 90;
-        }
-        else if(angleFactor > 3) {
+        } else if (angleFactor > 3) {
             leftAngle = 270;
             rightAngle = 0;
-        }
-        else {
+        } else {
             leftAngle = 90 * Math.floor(angleFactor);
             rightAngle = leftAngle + 90;
         }
 
         Chassis.stop();
-        Chassis.drive(0,power);
+        Chassis.drive(0, power);
 
-        while(!isDataClose(Gyro.getAbsAngle(), leftAngle, 2) && !isDataClose(Gyro.getAbsAngle(), rightAngle, 2)) {
+        while (!isDataClose(Gyro.getAbsAngle(), leftAngle, 2) && !isDataClose(Gyro.getAbsAngle(), rightAngle, 2)) {
             Robot.gp1.fetchData();
             Robot.gp2.fetchData();
-            
-            //Interrupt action if LB in GP1 is toggled
-            if(Robot.gp1.isKeyToggled(Gamepad.Key.LB)) {
+
+            // Interrupt action if LB in GP1 is toggled
+            if (Robot.gp1.isKeyToggled(Gamepad.Key.LB)) {
                 Chassis.stop();
                 return false;
             }
 
             main.updateTop();
-        }        
-        
+        }
+
         Chassis.stop();
 
         return true;
@@ -161,18 +159,18 @@ public class Utils {
     }
 
     public static boolean isDataInRange(double value, double min, double max) {
-        
-        if(min > max) {
+
+        if (min > max) {
             double temp = max;
             max = min;
             min = temp;
         }
-        
+
         return (value == min || value > min) && (value < max || value == max);
     }
 
     public static boolean isDataClose(double value, double expected, double tolerance) {
-        return Math.abs(value - expected) < tolerance || (Math.abs(value-expected)) == tolerance;
+        return Math.abs(value - expected) < tolerance || (Math.abs(value - expected)) == tolerance;
     }
 
     public static double mapAnalog(double value) {
@@ -180,18 +178,16 @@ public class Utils {
     }
 
     public static double mapAnalog(double value, double absMin, double absMax) {
-        
+
         boolean isNegative = (value < 0);
-        
+
         value = Math.abs(value);
 
-        if(value < absMin) {
+        if (value < absMin) {
             return 0;
-        }
-        else if(value > absMax || value == absMax) {
+        } else if (value > absMax || value == absMax) {
             return isNegative ? -1 : 1;
-        }
-        else {
+        } else {
             return (value - absMin) / absMax * (isNegative ? -1 : 1);
         }
     }

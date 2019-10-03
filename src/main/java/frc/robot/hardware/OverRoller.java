@@ -11,11 +11,11 @@ public class OverRoller {
 
     static CANSparkMax left;
     static CANSparkMax right;
-    
+
     static public void initialize() {
         left = new CANSparkMax(Statics.Left_Over_Roller_CAN_ID, MotorType.kBrushless);
         right = new CANSparkMax(Statics.Right_Over_Roller_CAN_ID, MotorType.kBrushless);
-        
+
         left.restoreFactoryDefaults();
         right.restoreFactoryDefaults();
 

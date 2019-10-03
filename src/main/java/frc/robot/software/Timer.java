@@ -9,7 +9,7 @@ public class Timer {
     public Timer(String name) {
         this.name = name;
         startTime = System.currentTimeMillis();
-    }   
+    }
 
     public void start() {
         startTime = System.currentTimeMillis();

@@ -25,4 +25,4 @@ public class Camera {
         server.setSource(switched ? cam1 : cam0);
     }
 
-}                                         
+}

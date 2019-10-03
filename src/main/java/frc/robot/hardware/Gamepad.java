@@ -85,9 +85,10 @@ final public class Gamepad extends XboxController {
         }
     }
 
-    public boolean isKeysChanged(Key...keys) {
+    public boolean isKeysChanged(Key... keys) {
         for (Key key : keys) {
-            if(states[key.ordinal()] == true) return true;
+            if (states[key.ordinal()] == true)
+                return true;
         }
         return false;
     }

@@ -25,8 +25,7 @@ public class RobotClimb {
     static public void actuate() {
         isForward = !isForward;
 
-        climber.set(isForward? Value.kForward : Value.kReverse);
+        climber.set(isForward ? Value.kForward : Value.kReverse);
     }
-
 
 }
