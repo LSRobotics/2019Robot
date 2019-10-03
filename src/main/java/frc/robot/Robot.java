@@ -19,7 +19,7 @@ public class Robot extends TimedRobot {
 
   static public Gamepad gp1, gp2;
 
-  public static Cargo.Mode cargoMode = null;
+  public static Cargo.Mode cargoMode = Cargo.Mode.IDLE;
 
   public static double gyroAngle;
 
@@ -36,6 +36,7 @@ public class Robot extends TimedRobot {
     gp1 = new Gamepad(0);
     gp2 = new Gamepad(1);
 
+    Chassis.initialize();
     Gyro.initialize();
     Cargo.initialize();
     RobotClimb.initialize();
@@ -167,7 +168,7 @@ public class Robot extends TimedRobot {
 
     // NFS Drive control
     else if (gp1.isKeysChanged(Key.LT, Key.RT, Key.J_LEFT_X)) {
-      double y = Utils.mapAnalog(-gp1.getValue(Key.RT)) - Utils.mapAnalog(-gp1.getValue(Key.LT));
+      double y = Utils.mapAnalog(gp1.getValue(Key.RT)) - Utils.mapAnalog(gp1.getValue(Key.LT));
       double x = Utils.mapAnalog(-gp1.getValue(Key.J_LEFT_X));
       Chassis.drive(y, x);
     }
