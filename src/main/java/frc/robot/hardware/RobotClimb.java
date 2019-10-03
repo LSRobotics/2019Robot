@@ -1,23 +1,16 @@
 package frc.robot.hardware;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
 import frc.robot.software.*;
 
 public class RobotClimb {
-    
-    // WPI_TalonSRX scooterMotorController;
-    // CANSparkMax climbMotorController;
+
     static DoubleSolenoid climber;
+    static boolean isForward = true;
 
     static public void initialize() {
-        // scooterMotorController = new WPI_TalonSRX(Statics.Scooter_Climb_CAN_ID);
-        // climbMotorController = new CANSparkMax(Statics.Climb_Wheels_CAN_ID, MotorType.kBrushless);
         climber = new DoubleSolenoid(Statics.PCM_CLIMB_F, Statics.PCM_CLIMB_R);
     }
 
@@ -28,5 +21,12 @@ public class RobotClimb {
     static public void closePenumatics() {
         climber.set(Value.kReverse);
     }
+
+    static public void actuate() {
+        isForward = !isForward;
+
+        climber.set(isForward? Value.kForward : Value.kReverse);
+    }
+
 
 }

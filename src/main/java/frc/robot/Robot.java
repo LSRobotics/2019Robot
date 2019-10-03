@@ -8,7 +8,6 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
 
@@ -22,26 +21,16 @@ public class Robot extends TimedRobot {
 
   public static Cargo.Mode cargoMode = null;
 
-  public static double cargoUltrasonicDistance;
-
-  public static boolean reverseAuto = false;
-  
   public static double gyroAngle;
-
-  public static DigitalInput limitSwitch;
 
   public static Compressor mCompressor;
 
-  public static boolean gorgonOpen = false,
-                        climbOpen = false;
   public double lightMode;
-  public boolean ballCall;
+  public boolean ballCall = false, isLowSpd = false;
 
-  public boolean isLowSpd = false;
-  
   @Override
   public void robotInit() {
-    
+
     mCompressor = new Compressor(0);
 
     gp1 = new Gamepad(0);
@@ -68,7 +57,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousPeriodic() {
-      teleopPeriodic();
+    teleopPeriodic();
   }
 
   @Override
@@ -76,14 +65,14 @@ public class Robot extends TimedRobot {
 
     gp1.fetchData();
     gp2.fetchData();
-   
+
     updateBottom();
     updateTop();
   }
 
   @Override
   public void testPeriodic() {
-    teleopPeriodic();    
+    teleopPeriodic();
   }
 
   public void updateTop() {
@@ -91,7 +80,7 @@ public class Robot extends TimedRobot {
     if (gp2.isKeyToggled(Key.J_RIGHT_DOWN)) {
       cargoMode = null;
     }
-    updateSensors(); 
+    updateSensors();
     updateCargoMechanism();
     updateClimb();
     updateOverRoller();
@@ -100,17 +89,16 @@ public class Robot extends TimedRobot {
     updatePixyCamera();
     updateGorgon();
 
-    //Not necessarily "Top" but does not belong to chassis
+    // Not necessarily "Top" but does not belong to chassis
     updateLights();
     updateSmartDashboard();
   }
 
   public void callForBall() {
-    if(gp1.isKeyHeld(Key.A)) {
-      if(ballCall) {
+    if (gp1.isKeyHeld(Key.A)) {
+      if (ballCall) {
         ballCall = false;
-      }
-      else {
+      } else {
         ballCall = true;
       }
     }
@@ -120,158 +108,133 @@ public class Robot extends TimedRobot {
 
     double finalAngle = Math.abs(gyroAngle % 360);
 
-    if(gp2.isKeyHeld(Key.B) || lightMode == -.55) {
+    if (gp2.isKeyHeld(Key.B) || lightMode == -.55) {
       lightMode = -.55;
-    }
-    else {
-      if(ballCall) {
+    } else {
+      if (ballCall) {
         lightMode = .93;
-      }
-      else {
+      } else {
 
-        if(Utils.isDataInRange(finalAngle, 85, 95) 
-          || Utils.isDataInRange(finalAngle,175, 185)
-          || Utils.isDataInRange(finalAngle, 265, 275)
-          || Utils.isDataInRange(finalAngle, 0, 5)
-          || Utils.isDataInRange(finalAngle, 355, 359)) {
-            lightMode = 0.77;
-          }
+        if (Utils.isDataInRange(finalAngle, 85, 95) || Utils.isDataInRange(finalAngle, 175, 185)
+            || Utils.isDataInRange(finalAngle, 265, 275) || Utils.isDataInRange(finalAngle, 0, 5)
+            || Utils.isDataInRange(finalAngle, 355, 359)) {
+          lightMode = 0.77;
+        }
 
         else {
-          if(Cargo.ballCaptured()) {
+          if (Cargo.ballCaptured()) {
             lightMode = .57;
-          }
-          else if(gorgonOpen) {
+          } else if (Gorgon.isOpen()) {
             lightMode = .63;
+          } else {
+            if (DriverStation.getInstance().getAlliance() == DriverStation.Alliance.Blue)
+              lightMode = .85;
+            else
+              lightMode = .61;
           }
-          else {
-            if (DriverStation.getInstance().getAlliance() == DriverStation.Alliance.Blue) lightMode = .85;
-            else lightMode = .61;
-          }
-        }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+        }
       }
     }
     Lights.lightChange(lightMode);
   }
+
   public void updatePixyCamera() {
-    if(gp1.isKeyToggled(Key.Y)) {
+    if (gp1.isKeyToggled(Key.Y)) {
       Camera.changeCam();
     }
   }
 
   public void updateSensors() {
     gyroAngle = Gyro.getAngle();
-    cargoUltrasonicDistance = Cargo.ultrasonicSensor.getRangeInches();
   }
 
-  //else contains true tank drive
+  // else contains true tank drive
   public void updateBottom() {
 
-    //Low Speed Mode
-    if(gp1.isKeyToggled(Key.RB)) {
+    // Low Speed Mode
+    if (gp1.isKeyToggled(Key.RB)) {
       isLowSpd = !isLowSpd;
 
-      Chassis.setSpeedFactor(isLowSpd? 0.5 : 1);
+      Chassis.setSpeedFactor(isLowSpd ? 0.5 : 1);
     }
 
-    //Assistive Autonomous
-    if(gp1.isKeyToggled(Key.DPAD_LEFT)) {
-      Utils.turnRobot(true);  
-    }
-    else if(gp1.isKeyToggled(Key.DPAD_RIGHT)) {
+    // Assistive Autonomous
+    if (gp1.isKeyToggled(Key.DPAD_LEFT)) {
+      Utils.turnRobot(true);
+    } else if (gp1.isKeyToggled(Key.DPAD_RIGHT)) {
       Utils.turnRobot(false);
     }
 
-    else if(gp1.isKeysChanged(Key.LT,Key.RT,Key.J_LEFT_X)) { //NFS Drive control
+    // NFS Drive control
+    else if (gp1.isKeysChanged(Key.LT, Key.RT, Key.J_LEFT_X)) {
       double y = Utils.mapAnalog(-gp1.getValue(Key.RT)) - Utils.mapAnalog(-gp1.getValue(Key.LT));
       double x = Utils.mapAnalog(-gp1.getValue(Key.J_LEFT_X));
-      Chassis.drive(y,x);
+      Chassis.drive(y, x);
     }
   }
 
-    public void updateSmartDashboard() {
-    } 
+  public void updateSmartDashboard() {
+  }
 
-    public void updateCargoMechanism() {
+  public void updateCargoMechanism() {
 
-      if(gp2.isKeyHeld(Key.J_RIGHT_DOWN)) {
-        Cargo.stopCargo();
-      }
-
-      if (cargoMode != null) {
-        Cargo.runCargo();
-      }
-      else if(gp2.isKeyToggled(Key.A)) {
-        cargoMode = Cargo.Mode.LOWPICKUP;
-        Cargo.runCargo();
-      }
-      else if(gp2.isKeyToggled(Key.B)) {
-        cargoMode = Cargo.Mode.HIGHSHOOT;
-        Cargo.runCargo();
-      }
-      else if(gp2.isKeyToggled(Key.X)) {
-        cargoMode = Cargo.Mode.LOWSHOOT;
-        Cargo.runCargo();
-      }
-      else if(gp2.isKeyToggled(Key.Y)) {
-        cargoMode = Cargo.Mode.HIGHPICKUP;
-        Cargo.runCargo();
-      }
-      else {
-        Cargo.stopCargo();
-      }
+    // Force stop
+    if (gp2.isKeyHeld(Key.J_RIGHT_DOWN)) {
+      Cargo.stopCargo();
     }
 
-    public void updateOverRoller() {
-
-      if(gp2.isKeyHeld(Key.DPAD_RIGHT) && OverRoller.getLeftEncoder() > 21 &&  OverRoller.getRightEncoder() < -21) {
-        OverRoller.raiseArms();
-      }
-      else if(gp2.isKeyHeld(Key.DPAD_LEFT)) {
-        OverRoller.lowerArms();
-      }
-      else {
-        OverRoller.stopArms();
-      }
+    if (cargoMode != Cargo.Mode.IDLE) {
+      Cargo.run();
+    } else if (gp2.isKeyToggled(Key.A)) {
+      cargoMode = Cargo.Mode.LOWPICKUP;
+      Cargo.run();
+    } else if (gp2.isKeyToggled(Key.B)) {
+      cargoMode = Cargo.Mode.HIGHSHOOT;
+      Cargo.run();
+    } else if (gp2.isKeyToggled(Key.X)) {
+      cargoMode = Cargo.Mode.LOWSHOOT;
+      Cargo.run();
+    } else if (gp2.isKeyToggled(Key.Y)) {
+      cargoMode = Cargo.Mode.HIGHPICKUP;
+      Cargo.run();
+    } else {
+      Cargo.stopCargo();
     }
+  }
 
-    public void updateWinch() {
+  public void updateOverRoller() {
 
-      if(gp2.getValue(Key.J_RIGHT_Y) > .2 && Winch.getWinchEncoderValue() > -10000) {
-        Winch.raiseGorgon();
-      }
-      else if(gp2.getValue(Key.J_RIGHT_Y) < -.2 && Winch.getWinchEncoderValue() < -10) {
-       Winch.lowerGorgon();
-      }
-      else {
-        Winch.stopGorgon();
-      }
+    if (gp2.isKeyHeld(Key.DPAD_RIGHT) && OverRoller.getLeftEncoder() > 21 && OverRoller.getRightEncoder() < -21) {
+      OverRoller.raiseArms();
+    } else if (gp2.isKeyHeld(Key.DPAD_LEFT)) {
+      OverRoller.lowerArms();
+    } else {
+      OverRoller.stopArms();
     }
+  }
 
-    public void updateGorgon() {
+  public void updateWinch() {
 
-      if(gp2.isKeyToggled(Key.DPAD_DOWN)) {
-        gorgonOpen = !gorgonOpen;
-
-        if(gorgonOpen) {
-          Gorgon.openGorgon();
-        }
-        else {
-          Gorgon.closeGorgon();
-        }
-      }
+    if (gp2.getValue(Key.J_RIGHT_Y) > .2 && Winch.getWinchEncoderValue() > -10000) {
+      Winch.raiseGorgon();
+    } else if (gp2.getValue(Key.J_RIGHT_Y) < -.2 && Winch.getWinchEncoderValue() < -10) {
+      Winch.lowerGorgon();
+    } else {
+      Winch.stopGorgon();
     }
+  }
 
-    public void updateClimb() {
-      if(gp2.isKeyToggled(Key.LB)) {
-        if (climbOpen) {
-          RobotClimb.closePenumatics();
-        }
-        else {
-          RobotClimb.openPenumatics();
-        }
-        climbOpen = !climbOpen;
-      }
+  public void updateGorgon() {
+
+    if (gp2.isKeyToggled(Key.DPAD_DOWN)) {
+      Gorgon.actuate();
     }
+  }
 
-   }
+  public void updateClimb() {
+    if (gp2.isKeyToggled(Key.LB)) {
+      RobotClimb.actuate();
+    }
+  }
+
+}
