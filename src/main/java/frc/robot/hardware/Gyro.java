@@ -18,6 +18,6 @@ public class Gyro {
     }
 
     public static double getAbsAngle() {
-        return gyro.getAngle() % 360;
+        return Math.abs(getAngle());
     }
 }

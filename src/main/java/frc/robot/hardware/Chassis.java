@@ -22,7 +22,7 @@ public class Chassis {
 
     static public void drive(double y, double x) {
 
-        y = -y;
+        x = -x;
 
         final double left = Utils.clipValue(y + x, -1.0, 1.0) * speedFactor * (isFliped ? -1 : 1);
         final double right = Utils.clipValue(y - x, -1.0, 1.0) * speedFactor * (isFliped ? -1 : 1);

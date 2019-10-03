@@ -91,26 +91,18 @@ public class Utils {
     public static boolean turnRobot(boolean isLeft) {
 
         double power = isLeft ? -0.3 : 0.3;
-        double angleFactor = Math.abs(Gyro.getAbsAngle()) / 90;
+        double angleFactor = Gyro.getAbsAngle() / 90;
 
         double leftAngle, rightAngle;
 
         // Determine Angles
-        if (angleFactor > 0 && angleFactor < 1) {
-            leftAngle = 0;
-            rightAngle = 90;
-        } else if (angleFactor > 3) {
-            leftAngle = 270;
-            rightAngle = 0;
-        } else {
-            leftAngle = 90 * Math.floor(angleFactor);
-            rightAngle = leftAngle + 90;
-        }
+        leftAngle = 90 * Math.floor(angleFactor);
+        rightAngle = leftAngle + 90;
 
         Chassis.stop();
         Chassis.drive(0, power);
 
-        while (!isDataClose(Gyro.getAbsAngle(), leftAngle, 2) && !isDataClose(Gyro.getAbsAngle(), rightAngle, 2)) {
+        while (!isDataClose(Gyro.getAbsAngle(), leftAngle, 5) && !isDataClose(Gyro.getAbsAngle(), rightAngle, 5)) {
             Robot.gp1.fetchData();
             Robot.gp2.fetchData();
 

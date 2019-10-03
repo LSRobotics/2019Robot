@@ -78,7 +78,7 @@ public class Robot extends TimedRobot {
 
   public void updateTop() {
 
-    if (gp2.isKeyToggled(Key.J_RIGHT_DOWN)) {
+    if (gp2.isKeyToggled(Key.LB)) {
       cargoMode = null;
     }
     updateSensors();
@@ -205,9 +205,9 @@ public class Robot extends TimedRobot {
 
   public void updateOverRoller() {
 
-    if (gp2.isKeyHeld(Key.DPAD_RIGHT) && OverRoller.getLeftEncoder() > 21 && OverRoller.getRightEncoder() < -21) {
+    if (gp2.getValue(Key.J_LEFT_Y) > 0.1 && OverRoller.getLeftEncoder() > 21 && OverRoller.getRightEncoder() < -21) {
       OverRoller.raiseArms();
-    } else if (gp2.isKeyHeld(Key.DPAD_LEFT)) {
+    } else if (gp2.getValue(Key.J_LEFT_Y) < -0.1) {
       OverRoller.lowerArms();
     } else {
       OverRoller.stopArms();
@@ -227,13 +227,13 @@ public class Robot extends TimedRobot {
 
   public void updateGorgon() {
 
-    if (gp2.isKeyToggled(Key.DPAD_DOWN)) {
+    if (gp2.isKeyToggled(Key.DPAD_UP)) {
       Gorgon.actuate();
     }
   }
 
   public void updateClimb() {
-    if (gp2.isKeyToggled(Key.LB)) {
+    if (gp2.isKeyToggled(Key.DPAD_DOWN)) {
       RobotClimb.actuate();
     }
   }
