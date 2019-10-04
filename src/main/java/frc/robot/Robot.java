@@ -205,7 +205,7 @@ public class Robot extends TimedRobot {
 
   public void updateOverRoller() {
 
-    if (gp2.getValue(Key.J_LEFT_Y) > 0.1 && OverRoller.getLeftEncoder() > 21 && OverRoller.getRightEncoder() < -21) {
+    if (gp2.getValue(Key.J_LEFT_Y) > 0.1) {
       OverRoller.raiseArms();
     } else if (gp2.getValue(Key.J_LEFT_Y) < -0.1) {
       OverRoller.lowerArms();
