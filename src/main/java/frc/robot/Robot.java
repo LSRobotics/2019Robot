@@ -79,7 +79,7 @@ public class Robot extends TimedRobot {
   public void updateTop() {
 
     if (gp2.isKeyToggled(Key.LB)) {
-      cargoMode = null;
+      Cargo.stopCargo();
     }
     updateSensors();
     updateCargoMechanism();
@@ -168,7 +168,7 @@ public class Robot extends TimedRobot {
 
     // NFS Drive control
     else if (gp1.isKeysChanged(Key.LT, Key.RT, Key.J_LEFT_X)) {
-      double y = Utils.mapAnalog(gp1.getValue(Key.RT)) - Utils.mapAnalog(gp1.getValue(Key.LT));
+      double y = Utils.mapAnalog(-gp1.getValue(Key.RT)) - Utils.mapAnalog(-gp1.getValue(Key.LT));
       double x = Utils.mapAnalog(-gp1.getValue(Key.J_LEFT_X));
       Chassis.drive(y, x);
     }
@@ -228,6 +228,7 @@ public class Robot extends TimedRobot {
   public void updateGorgon() {
 
     if (gp2.isKeyToggled(Key.DPAD_UP)) {
+      
       Gorgon.actuate();
     }
   }

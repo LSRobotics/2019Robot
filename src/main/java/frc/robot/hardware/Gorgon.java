@@ -11,7 +11,7 @@ public class Gorgon {
 
     static public void initialize() {
         gorgon = new DoubleSolenoid(Statics.PCM_GORGON_F, Statics.PCM_GORGON_R);
-        gorgon.set(Value.kOff);
+        //gorgon.set(Value.kOff);
     }
 
     static public void openGorgon() {
@@ -31,6 +31,8 @@ public class Gorgon {
 
     static public void actuate() {
         isForward = !isForward;
+
+        Utils.report("Gorgon actuated");
 
         gorgon.set(isForward ? Value.kForward : Value.kReverse);
     }

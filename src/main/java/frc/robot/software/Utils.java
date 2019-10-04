@@ -12,7 +12,7 @@ public class Utils {
 
     private static String gameData;
     final public static int DEFAULT_BREAK_TIME = 1200;
-    public static boolean isOutputEnabled = false;
+    public static boolean isOutputEnabled = true;
     public static Robot main;
 
     public static void initialize(Robot mainRobot) {
@@ -90,7 +90,7 @@ public class Utils {
 
     public static boolean turnRobot(boolean isLeft) {
 
-        double power = isLeft ? -0.3 : 0.3;
+        double power = isLeft ? 0.5 : -0.5;
         double angleFactor = Gyro.getAbsAngle() / 90;
 
         double leftAngle, rightAngle;
@@ -99,10 +99,15 @@ public class Utils {
         leftAngle = 90 * Math.floor(angleFactor);
         rightAngle = leftAngle + 90;
 
+        if(angleFactor == Math.floor(angleFactor)) {
+            leftAngle += isLeft ? -90 : 90;
+            rightAngle += isLeft ? -90 : 90;
+        }
+
         Chassis.stop();
         Chassis.drive(0, power);
 
-        while (!isDataClose(Gyro.getAbsAngle(), leftAngle, 5) && !isDataClose(Gyro.getAbsAngle(), rightAngle, 5)) {
+        while (!isDataClose(Gyro.getAbsAngle(), leftAngle, 3) && !isDataClose(Gyro.getAbsAngle(), rightAngle, 3)) {
             Robot.gp1.fetchData();
             Robot.gp2.fetchData();
 
