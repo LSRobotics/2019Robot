@@ -90,7 +90,7 @@ public class Utils {
 
     public static boolean turnRobot(boolean isLeft) {
 
-        double power = isLeft ? 0.5 : -0.5;
+        double power = isLeft ? -0.5 : 0.5;
         double angleFactor = Gyro.getAbsAngle() / 90;
 
         double leftAngle, rightAngle;
