@@ -10,10 +10,10 @@ public class Chassis {
     static boolean isFliped = false;
 
     static public void initialize() {
-        l1 = new Motor(Statics.CHASSIS_L1,true);
-        l2 = new Motor(Statics.CHASSIS_L2,true);
-        r1 = new Motor(Statics.CHASSIS_R1,false);
-        r2 = new Motor(Statics.CHASSIS_R2,false);
+        l1 = new Motor(Statics.CHASSIS_L1,false);
+        l2 = new Motor(Statics.CHASSIS_L2,false);
+        r1 = new Motor(Statics.CHASSIS_R1,true);
+        r2 = new Motor(Statics.CHASSIS_R2,true);
     }
 
     static public void setSpeedFactor(double factor) {
@@ -21,8 +21,6 @@ public class Chassis {
     }
 
     static public void drive(double y, double x) {
-
-        x = -x;
 
         final double left = Utils.clipValue(y + x, -1.0, 1.0) * speedFactor * (isFliped ? -1 : 1);
         final double right = Utils.clipValue(y - x, -1.0, 1.0) * speedFactor * (isFliped ? -1 : 1);
