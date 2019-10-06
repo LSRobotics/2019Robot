@@ -205,9 +205,13 @@ public class Robot extends TimedRobot {
 
   public void updateOverRoller() {
 
-    if (gp2.getValue(Key.J_LEFT_Y) > 0.1) {
+    if (-gp2.getValue(Key.J_LEFT_Y) > 0.1
+      //Todo: Test THESE
+      && OverRoller.getLeftEncoder() > 21 
+      && OverRoller.getRightEncoder() < -21
+    ) {
       OverRoller.raiseArms();
-    } else if (gp2.getValue(Key.J_LEFT_Y) < -0.1) {
+    } else if (-gp2.getValue(Key.J_LEFT_Y) < -0.1) {
       OverRoller.lowerArms();
     } else {
       OverRoller.stopArms();
@@ -216,9 +220,13 @@ public class Robot extends TimedRobot {
 
   public void updateWinch() {
 
-    if (gp2.getValue(Key.J_RIGHT_Y) > .2 && Winch.getWinchEncoderValue() > -10000) {
+    if (-gp2.getValue(Key.J_RIGHT_Y) > .2 
+        //TODO: Test This
+        && Winch.getWinchEncoderValue() > -10000) {
       Winch.raiseGorgon();
-    } else if (gp2.getValue(Key.J_RIGHT_Y) < -.2 && Winch.getWinchEncoderValue() < -10) {
+    } else if (-gp2.getValue(Key.J_RIGHT_Y) < -.2
+        //TODO: Test this
+        && Winch.getWinchEncoderValue() < -10) {
       Winch.lowerGorgon();
     } else {
       Winch.stopGorgon();

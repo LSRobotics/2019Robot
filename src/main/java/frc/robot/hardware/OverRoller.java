@@ -22,17 +22,17 @@ public class OverRoller {
         left.getEncoder().setPosition(0);
         right.getEncoder().setPosition(0);
 
-        right.setInverted(true);
+        //right.setInverted(true);
     }
 
     static public void lowerArms() {
         left.set(OVERROLLER_SPD);
-        right.set(OVERROLLER_SPD);
+        right.set(-OVERROLLER_SPD);
     }
 
     static public void raiseArms() {
         left.set(-OVERROLLER_SPD);
-        right.set(-OVERROLLER_SPD);
+        right.set(OVERROLLER_SPD);
     }
 
     static public void stopArms() {
