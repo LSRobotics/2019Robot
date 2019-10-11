@@ -169,7 +169,7 @@ public class Robot extends TimedRobot {
     // NFS Drive control
     else if (gp1.isKeysChanged(Key.J_LEFT_Y, Key.J_RIGHT_X)) {
       double y = Utils.mapAnalog(-gp1.getValue(Key.J_LEFT_Y));
-      double x = Utils.mapAnalog(-gp1.getValue(Key.J_RIGHT_X));
+      double x = Utils.mapAnalog(gp1.getValue(Key.J_RIGHT_X));
       Chassis.drive(y, x);
     }
   }
