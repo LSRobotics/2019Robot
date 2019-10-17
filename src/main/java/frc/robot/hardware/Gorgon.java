@@ -32,8 +32,6 @@ public class Gorgon {
     static public void actuate() {
         isForward = !isForward;
 
-        Utils.report("Gorgon actuated");
-
         gorgon.set(isForward ? Value.kForward : Value.kReverse);
     }
 

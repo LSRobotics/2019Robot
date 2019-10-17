@@ -14,8 +14,7 @@ public class Motor {
     private double speed = 1.0;
     public static Model DEFAULT_MODEL = Model.TALON_SRX_CAN;
     private boolean isReverse = false;
-
-    public Motor(int port) {
+          public Motor(int port) {
         this(port, DEFAULT_MODEL);
     }
 
@@ -42,17 +41,9 @@ public class Motor {
             motor = new Spark(port);
         case TALON_SRX_CAN:
             motor = new WPI_TalonSRX(port);
-
-            // Not really sure what this does but I am leaving this for now.
-            ((WPI_TalonSRX) motor).configFactoryDefault();
         default:
             break;
         }
-
-        if (model == Model.TALON_SRX_CAN) {
-            ((WPI_TalonSRX) motor).configFactoryDefault();
-        }
-
         motor.setInverted(isReverse);
     }
 

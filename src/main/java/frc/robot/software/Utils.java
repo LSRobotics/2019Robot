@@ -90,16 +90,17 @@ public class Utils {
 
     public static boolean turnRobot(boolean isLeft) {
 
-        final double power = isLeft ? -0.5 : 0.5;
+        final double power = isLeft ? -0.3 : 0.3;
         final double angle = Gyro.getAngle();
-        final double left = angle - 90,
-                     right = angle + 90;
+        final double left = angle - 85,
+                     right = angle + 85;
         
+        if(Math.abs(angle % 90) < 5) return true;
 
         Chassis.stop();
         Chassis.drive(0, power);
 
-        while (!isDataClose(Gyro.getAngle(), left, 3) && !isDataClose(Gyro.getAngle(), right, 3)) {
+        while (!isDataClose(Gyro.getAngle(), left, 1) && !isDataClose(Gyro.getAngle(), right, 1)) {
             Robot.gp1.fetchData();
             Robot.gp2.fetchData();
 
@@ -159,7 +160,7 @@ public class Utils {
     }
 
     public static boolean isDataClose(double value, double expected, double tolerance) {
-        return Math.abs(value - expected) < tolerance || (Math.abs(value - expected)) == tolerance;
+        return Math.abs(value - expected) < tolerance || (Math.abs(value - expected)) == tolerance || Math.abs(value - expected) == 0;
     }
 
     public static double mapAnalog(double value) {

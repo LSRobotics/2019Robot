@@ -39,4 +39,16 @@ public class Chassis {
     static public void flip() {
         isFliped = !isFliped;
     }
+
+    static public void test(boolean isTurn, boolean isLeft) {
+        if(isLeft) {
+            l1.move(isTurn? 0.5 : 0);
+            l2.move(isTurn? 0.5 : 0);
+        
+        }
+        else {
+            r1.move(isTurn? 0.5 : 0);
+            r2.move(isTurn? 0.5 : 0);
+        }
+    }
 }

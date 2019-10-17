@@ -73,7 +73,23 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testPeriodic() {
-    teleopPeriodic();
+    gp1.fetchData();
+    gp2.fetchData();
+
+    if(gp1.isKeyHeld(Key.DPAD_LEFT)) {
+
+      Utils.report("Running chassis Port" + Statics.CHASSIS_L1 + " and " + Statics.CHASSIS_L2);
+
+      Chassis.test(gp1.isKeyHeld(Key.DPAD_LEFT), true);
+    }
+    else if(gp1.isKeyHeld(Key.DPAD_RIGHT)) {
+
+      Utils.report("Running chssis Port" + Statics.CHASSIS_R1 + " and " + Statics.CHASSIS_R2);
+
+      Chassis.test(gp1.isKeyHeld(Key.DPAD_RIGHT), false);
+    }
+
+    updateTop();
   }
 
   public void updateTop() {
@@ -210,6 +226,7 @@ public class Robot extends TimedRobot {
       && OverRoller.getLeftEncoder() > 21 
       && OverRoller.getRightEncoder() < -21
     ) {
+      
       OverRoller.raiseArms();
     } else if (-gp2.getValue(Key.J_LEFT_Y) < -0.1) {
       OverRoller.lowerArms();

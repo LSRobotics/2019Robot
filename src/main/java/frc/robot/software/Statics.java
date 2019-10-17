@@ -17,15 +17,8 @@ public class Statics {
     public final static int Right_Over_Roller_CAN_ID = 1;
     public final static int UNUSED_CAN_ID = 5;
 
-    // public static int Left_Ultrasonic_PingChannel = 0;
-    // public static int Left_Ultrasonic_EchoChannel = 1;
-    // public static int Right_Ultrasonic_PingChannel = 2;
-    // public static int Right_Ultrasonic_EchoChannel = 3;
-
     public final static int Cargo_Ultrasonic_PingChannel = 0;
     public final static int Cargo_Ultrasonic_EchoChannel = 1;
-
-    public final static int LIDAR_Sensor_Channel = 9;
 
     public final static int Scooter_Climb_CAN_ID = 3;
     public final static int Climb_Wheels_CAN_ID = 2;
