@@ -54,4 +54,6 @@ public class Statics {
 
     public final static int IR_Sensor_Port = 3;
     public final static int Winch_CAN_ID = 4;
+
+    public final static int TIME_PER_360 = 1700;
 }

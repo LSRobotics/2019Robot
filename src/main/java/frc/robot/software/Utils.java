@@ -90,17 +90,16 @@ public class Utils {
 
     public static boolean turnRobot(boolean isLeft) {
 
-        final double power = isLeft ? -0.3 : 0.3;
-        final double angle = Gyro.getAngle();
-        final double left = angle - 85,
-                     right = angle + 85;
-        
-        if(Math.abs(angle % 90) < 5) return true;
+        final double power = isLeft ? -0.5 : 0.5;
+
+        Timer t = new Timer("Robot Turn");
 
         Chassis.stop();
         Chassis.drive(0, power);
 
-        while (!isDataClose(Gyro.getAngle(), left, 1) && !isDataClose(Gyro.getAngle(), right, 1)) {
+        t.start();
+
+        while (t.getElaspedTimeInMs() < Statics.TIME_PER_360 /4) {
             Robot.gp1.fetchData();
             Robot.gp2.fetchData();
 
