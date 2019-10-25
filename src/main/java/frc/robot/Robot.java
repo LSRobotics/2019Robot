@@ -169,7 +169,7 @@ public class Robot extends TimedRobot {
   public void updateBottom() {
 
     // Low Speed Mode
-    if (gp1.isKeyToggled(Key.RB)) {
+    if (gp1.isKeyToggled(Key.DPAD_DOWN)) {
       isLowSpd = !isLowSpd;
 
       Chassis.setSpeedFactor(isLowSpd ? 0.5 : 1);
@@ -259,7 +259,8 @@ public class Robot extends TimedRobot {
   }
 
   public void updateClimb() {
-    if (gp2.isKeyToggled(Key.DPAD_DOWN)) {
+    if (gp2.isKeyToggled(Key.DPAD_DOWN) 
+    || gp1.isKeyToggled(Key.RB)) {
       RobotClimb.actuate();
     }
   }
