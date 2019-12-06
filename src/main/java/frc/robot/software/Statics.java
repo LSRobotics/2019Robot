@@ -56,4 +56,7 @@ public class Statics {
     public final static int Winch_CAN_ID = 4;
 
     public final static int TIME_PER_360 = 1700;
+
+    public final static double OFFSET_MIN = 0.1,
+                               OFFSET_MAX = 1.0;
 }

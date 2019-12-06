@@ -1,8 +1,6 @@
 package frc.robot.software;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import frc.robot.Robot;
-import frc.robot.hardware.*;
 
 public class Utils {
 
@@ -13,11 +11,6 @@ public class Utils {
     private static String gameData;
     final public static int DEFAULT_BREAK_TIME = 1200;
     public static boolean isOutputEnabled = true;
-    public static Robot main;
-
-    public static void initialize(Robot mainRobot) {
-        main = mainRobot;
-    }
 
     public static void fetchGameData() {
 
@@ -44,93 +37,11 @@ public class Utils {
 
     }
 
-    public static boolean drive(double leftRight, double forwardBack, int millisecond) {
-        try {
-            report("Moving at speed of (" + leftRight + ", " + forwardBack + ") for" + millisecond + " ms");
-            Chassis.drive(forwardBack, leftRight);
-            if (!takeABreak(millisecond))
-                return false;
-            report("Moving done");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return true;
-    }
-
-    public static boolean takeABreak() {
-        return takeABreak(DEFAULT_BREAK_TIME);
-    }
-
-    public static boolean takeABreak(int millisecond) {
-
-        long time = System.currentTimeMillis();
-
-        try {
-            report("Idle for " + millisecond + " ms");
-            while ((System.currentTimeMillis() - time) < millisecond) {
-
-                Robot.gp1.fetchData();
-
-                if (Robot.gp1.isGamepadChanged()) {
-                    report("Interrupted by controller actions");
-                    return false;
-                }
-                // I still need to sleep a bit -- how about a 1/200 sec nap?
-                Thread.sleep(5);
-            }
-            report("Woke up");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return true;
-    }
-
-    public static boolean turnRobot(boolean isLeft) {
-
-        final double power = isLeft ? -0.5 : 0.5;
-
-        Timer t = new Timer("Robot Turn");
-
-        Chassis.stop();
-        Chassis.drive(0, power);
-
-        t.start();
-
-        while (t.getElaspedTimeInMs() < Statics.TIME_PER_360 /4) {
-            Robot.gp1.fetchData();
-            Robot.gp2.fetchData();
-
-            // Interrupt action if LB in GP1 is toggled
-            if (Robot.gp1.isKeyToggled(Gamepad.Key.LB)) {
-                Chassis.stop();
-                return false;
-            }
-
-            main.updateTop();
-        }
-
-        Chassis.stop();
-
-        return true;
-    }
-
-    public static double estimateDriveTime(double speed, double distance) {
-        return distance / speed;
-    }
-
     public static void report(String message) {
         if (isOutputEnabled) {
             DriverStation.reportWarning(message, false);
         }
     }
-
-    public static boolean isDriverBusy() {
-        return Robot.gp1.isGamepadChanged();
-    }
-
     /**
      *
      * @param value the original value
@@ -147,6 +58,27 @@ public class Utils {
             return value;
     }
 
+    public static double mapAnalog(double value) {
+        return mapAnalog(value, Statics.OFFSET_MIN, Statics.OFFSET_MAX);
+    }
+
+    public static double mapAnalog(double value, double absMin, double absMax) {
+        
+        boolean isNegative = (value < 0);
+        
+        value = Math.abs(value);
+
+        if(value < absMin) {
+            return 0;
+        }
+        else if(value > absMax || value == absMax) {
+            return isNegative ? -1 : 1;
+        }
+        else {
+            return (value - absMin) / absMax * (isNegative ? -1 : 1);
+        }
+    }
+
     public static boolean isDataInRange(double value, double min, double max) {
 
         if (min > max) {
@@ -160,24 +92,5 @@ public class Utils {
 
     public static boolean isDataClose(double value, double expected, double tolerance) {
         return Math.abs(value - expected) < tolerance || (Math.abs(value - expected)) == tolerance || Math.abs(value - expected) == 0;
-    }
-
-    public static double mapAnalog(double value) {
-        return mapAnalog(value, 0.1, 0.7);
-    }
-
-    public static double mapAnalog(double value, double absMin, double absMax) {
-
-        boolean isNegative = (value < 0);
-
-        value = Math.abs(value);
-
-        if (value < absMin) {
-            return 0;
-        } else if (value > absMax || value == absMax) {
-            return isNegative ? -1 : 1;
-        } else {
-            return (value - absMin) / absMax * (isNegative ? -1 : 1);
-        }
     }
 }

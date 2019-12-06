@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
 
 import frc.robot.software.*;
+import frc.robot.constants.SpeedCurve;
 import frc.robot.hardware.*;
 import frc.robot.hardware.Gamepad.Key;
 
@@ -36,6 +37,8 @@ public class Robot extends TimedRobot {
     gp1 = new Gamepad(0);
     gp2 = new Gamepad(1);
 
+    Core.initialize(this);
+
     Chassis.initialize();
     Gyro.initialize();
     Cargo.initialize();
@@ -45,7 +48,8 @@ public class Robot extends TimedRobot {
     OverRoller.initialize();
     Winch.initialize();
     Lights.initialize();
-    Utils.initialize(this);
+
+    Chassis.setSpeedCurve(SpeedCurve.SQUARED);
   }
 
   @Override
@@ -73,23 +77,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testPeriodic() {
-    gp1.fetchData();
-    gp2.fetchData();
-
-    if(gp1.isKeyHeld(Key.DPAD_LEFT)) {
-
-      Utils.report("Running chassis Port" + Statics.CHASSIS_L1 + " and " + Statics.CHASSIS_L2);
-
-      Chassis.test(gp1.isKeyHeld(Key.DPAD_LEFT), true);
-    }
-    else if(gp1.isKeyHeld(Key.DPAD_RIGHT)) {
-
-      Utils.report("Running chssis Port" + Statics.CHASSIS_R1 + " and " + Statics.CHASSIS_R2);
-
-      Chassis.test(gp1.isKeyHeld(Key.DPAD_RIGHT), false);
-    }
-
-    updateTop();
+    //TODO: Add test code here
+    teleopPeriodic();
   }
 
   public void updateTop() {
@@ -177,9 +166,9 @@ public class Robot extends TimedRobot {
 
     // Assistive Autonomous
     if (gp1.isKeyToggled(Key.DPAD_LEFT)) {
-      Utils.turnRobot(true);
+      AutoPilot.turnRobotByTime(true);
     } else if (gp1.isKeyToggled(Key.DPAD_RIGHT)) {
-      Utils.turnRobot(false);
+      AutoPilot.turnRobotByTime(false);
     }
 
     // NFS Drive control
