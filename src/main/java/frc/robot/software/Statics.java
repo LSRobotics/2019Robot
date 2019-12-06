@@ -41,7 +41,7 @@ public class Statics {
     public final static double Low_Cargo_Motor_Speed = .5;
     public final static double Low_Cargo_Shoot_Motor_Speed = 1;
     public final static double Low_Cargo_Shoot_High_Motor_Speed = .5;
-    public final static double High_Cargo_Motor_Speed = .6;
+    public final static double High_Cargo_Motor_Speed = 0.7;
 
     public final static double CARGO_HOLD_DISTANCE = 6;
 

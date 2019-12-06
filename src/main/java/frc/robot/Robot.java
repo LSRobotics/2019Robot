@@ -46,6 +46,8 @@ public class Robot extends TimedRobot {
     Winch.initialize();
     Lights.initialize();
     Utils.initialize(this);
+
+    Chassis.setSpeedCurve(Chassis.SpeedCurve.SQUARED);
   }
 
   @Override
@@ -69,6 +71,8 @@ public class Robot extends TimedRobot {
 
     updateBottom();
     updateTop();
+
+    Utils.report("Gyro angle: " + Gyro.getAngle());
   }
 
   @Override
@@ -172,7 +176,7 @@ public class Robot extends TimedRobot {
     if (gp1.isKeyToggled(Key.DPAD_DOWN)) {
       isLowSpd = !isLowSpd;
 
-      Chassis.setSpeedFactor(isLowSpd ? 0.5 : 1);
+      Chassis.setSpeedFactor(isLowSpd ? 0.5 : 0.8);
     }
 
     // Assistive Autonomous
@@ -183,8 +187,9 @@ public class Robot extends TimedRobot {
     }
 
     // NFS Drive control
-    else if (gp1.isKeysChanged(Key.J_LEFT_Y, Key.J_RIGHT_X)) {
-      double y = Utils.mapAnalog(-gp1.getValue(Key.J_LEFT_Y));
+    else if (gp1.isKeysChanged(Key.LT,Key.RT, Key.J_RIGHT_X)) {
+
+      double y = Utils.mapAnalog(gp1.getValue(Key.RT)) - Utils.mapAnalog(gp1.getValue(Key.LT));
       double x = Utils.mapAnalog(gp1.getValue(Key.J_RIGHT_X));
       Chassis.drive(y, x);
     }
@@ -250,6 +255,7 @@ public class Robot extends TimedRobot {
     }
   }
 
+  //Gorgon controller
   public void updateGorgon() {
 
     if (gp2.isKeyToggled(Key.DPAD_UP)) {

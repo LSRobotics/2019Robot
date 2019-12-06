@@ -95,7 +95,7 @@ public class Utils {
         Timer t = new Timer("Robot Turn");
 
         Chassis.stop();
-        Chassis.drive(0, power);
+        Chassis.driveRaw(0, power);
 
         t.start();
 
