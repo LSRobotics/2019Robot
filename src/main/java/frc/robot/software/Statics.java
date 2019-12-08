@@ -1,9 +1,8 @@
 package frc.robot.software;
 
 public class Statics {
-    
 
-    //CAN Devices
+    // CAN Devices
     public final static int CHASSIS_L1 = 10;
     public final static int CHASSIS_L2 = 11;
 
@@ -33,11 +32,10 @@ public class Statics {
     public final static int PCM_GORGON_F = 0;
     public final static int PCM_GORGON_R = 1;
 
-
     public final static double GAMEPAD_AXIS_TOLERANCE = 0.1;
 
     public final static double CM_TO_IN = 0.393701;
-    
+
     public final static double Low_Cargo_Motor_Speed = .5;
     public final static double Low_Cargo_Shoot_Motor_Speed = 1;
     public final static double Low_Cargo_Shoot_High_Motor_Speed = .5;
@@ -57,6 +55,5 @@ public class Statics {
 
     public final static int TIME_PER_360 = 1700;
 
-    public final static double OFFSET_MIN = 0.1,
-                               OFFSET_MAX = 1.0;
+    public final static double OFFSET_MIN = 0.1, OFFSET_MAX = 1.0;
 }

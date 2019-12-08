@@ -6,7 +6,7 @@ import frc.robot.constants.*;
 
 public class NavX {
     static AHRS navx;
-
+    
     public static void initialize() {
 
         try {
@@ -28,6 +28,10 @@ public class NavX {
             return navx.getVelocityZ();
         }
 
+    }
+
+    public static double [] getVelocities() {
+        return new double [] {getVelocity(Axis.X),getVelocity(Axis.Y),getVelocity(Axis.Z)};
     }
 
     public static double getDisplacement (Axis axis) {

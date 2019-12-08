@@ -8,6 +8,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
 
@@ -49,6 +50,9 @@ public class Robot extends TimedRobot {
     Winch.initialize();
     Lights.initialize();
 
+    NavX.initialize();
+    RoboRIO.initialize();
+
     Chassis.setSpeedCurve(SpeedCurve.SQUARED);
   }
 
@@ -77,7 +81,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testPeriodic() {
-    //TODO: Add test code here
+    // TODO: Add test code here
     teleopPeriodic();
   }
 
@@ -180,6 +184,17 @@ public class Robot extends TimedRobot {
   }
 
   public void updateSmartDashboard() {
+
+    double [] rio = RoboRIO.getVelocities();
+    double [] navx = NavX.getVelocities();
+
+    SmartDashboard.putNumber("RoboRIO X Velocity", rio[0]);
+    SmartDashboard.putNumber("RoboRIO Y Velocity", rio[1]);
+    SmartDashboard.putNumber("RoboRIO Z Velocity", rio[2]);
+
+    SmartDashboard.putNumber("Navx-MXP X Velocity", navx[0]);
+    SmartDashboard.putNumber("Navx-MXP Y Velocity", navx[1]);
+    SmartDashboard.putNumber("Navx-MXP Z Velocity", navx[2]);
   }
 
   public void updateCargoMechanism() {
@@ -211,11 +226,9 @@ public class Robot extends TimedRobot {
   public void updateOverRoller() {
 
     if (-gp2.getValue(Key.J_LEFT_Y) > 0.1
-      //Todo: Test THESE
-      && OverRoller.getLeftEncoder() > 21 
-      && OverRoller.getRightEncoder() < -21
-    ) {
-      
+        // Todo: Test THESE
+        && OverRoller.getLeftEncoder() > 21 && OverRoller.getRightEncoder() < -21) {
+
       OverRoller.raiseArms();
     } else if (-gp2.getValue(Key.J_LEFT_Y) < -0.1) {
       OverRoller.lowerArms();
@@ -226,12 +239,12 @@ public class Robot extends TimedRobot {
 
   public void updateWinch() {
 
-    if (-gp2.getValue(Key.J_RIGHT_Y) > .2 
-        //TODO: Test This
+    if (-gp2.getValue(Key.J_RIGHT_Y) > .2
+        // TODO: Test This
         && Winch.getWinchEncoderValue() > -10000) {
       Winch.raiseGorgon();
     } else if (-gp2.getValue(Key.J_RIGHT_Y) < -.2
-        //TODO: Test this
+        // TODO: Test this
         && Winch.getWinchEncoderValue() < -10) {
       Winch.lowerGorgon();
     } else {
@@ -242,7 +255,7 @@ public class Robot extends TimedRobot {
   public void updateGorgon() {
 
     if (gp2.isKeyToggled(Key.DPAD_UP)) {
-      
+
       Gorgon.actuate();
     }
   }

@@ -14,7 +14,8 @@ public class Motor {
     private double speed = 1.0;
     public static Model DEFAULT_MODEL = Model.TALON_SRX_CAN;
     private boolean isReverse = false;
-          public Motor(int port) {
+
+    public Motor(int port) {
         this(port, DEFAULT_MODEL);
     }
 

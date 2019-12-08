@@ -10,14 +10,12 @@ import edu.wpi.first.wpilibj.*;
 public class MotorNG {
 
     public enum Model {
-        SPARK_MAX,
-        FALCON_500,
-        TALON_SRX
+        SPARK_MAX, FALCON_500, TALON_SRX
     }
 
     private WPI_TalonSRX srx;
     private CANSparkMax max;
-    
+
     private double speed = 1.0;
     public static Model DEFAULT_MODEL = Model.TALON_SRX;
     private Model model = DEFAULT_MODEL;
@@ -39,23 +37,21 @@ public class MotorNG {
 
         this.model = model;
 
-        if(model == Model.FALCON_500 || model == Model.TALON_SRX) {
+        if (model == Model.FALCON_500 || model == Model.TALON_SRX) {
             srx = new WPI_TalonSRX(port);
             setReverse(isReverse);
-        }
-        else {
-            max = new CANSparkMax(port, MotorType.kBrushless);   
+        } else {
+            max = new CANSparkMax(port, MotorType.kBrushless);
             setReverse(isReverse);
         }
     }
 
     public void setReverse(boolean isReverse) {
         this.isReverse = isReverse;
-    
-        if(model == Model.FALCON_500 || model == Model.TALON_SRX) {
+
+        if (model == Model.FALCON_500 || model == Model.TALON_SRX) {
             srx.setInverted(isReverse);
-        }
-        else {
+        } else {
             max.setInverted(isReverse);
         }
 
@@ -75,10 +71,9 @@ public class MotorNG {
 
     public void move(double value) {
 
-        if(model == Model.FALCON_500 || model == Model.TALON_SRX) {
+        if (model == Model.FALCON_500 || model == Model.TALON_SRX) {
             srx.set(value * speed);
-        }
-        else {
+        } else {
             max.set(value * speed);
         }
     }
@@ -89,10 +84,9 @@ public class MotorNG {
 
     public double getEncoderReading() {
 
-        if(model == Model.FALCON_500 || model == Model.TALON_SRX) {
+        if (model == Model.FALCON_500 || model == Model.TALON_SRX) {
             return srx.getSelectedSensorPosition(0);
-        }
-        else {
+        } else {
             return max.getEncoder().getPosition();
         }
     }

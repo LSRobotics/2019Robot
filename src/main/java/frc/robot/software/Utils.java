@@ -42,6 +42,7 @@ public class Utils {
             DriverStation.reportWarning(message, false);
         }
     }
+
     /**
      *
      * @param value the original value
@@ -63,18 +64,16 @@ public class Utils {
     }
 
     public static double mapAnalog(double value, double absMin, double absMax) {
-        
+
         boolean isNegative = (value < 0);
-        
+
         value = Math.abs(value);
 
-        if(value < absMin) {
+        if (value < absMin) {
             return 0;
-        }
-        else if(value > absMax || value == absMax) {
+        } else if (value > absMax || value == absMax) {
             return isNegative ? -1 : 1;
-        }
-        else {
+        } else {
             return (value - absMin) / absMax * (isNegative ? -1 : 1);
         }
     }
@@ -91,6 +90,7 @@ public class Utils {
     }
 
     public static boolean isDataClose(double value, double expected, double tolerance) {
-        return Math.abs(value - expected) < tolerance || (Math.abs(value - expected)) == tolerance || Math.abs(value - expected) == 0;
+        return Math.abs(value - expected) < tolerance || (Math.abs(value - expected)) == tolerance
+                || Math.abs(value - expected) == 0;
     }
 }

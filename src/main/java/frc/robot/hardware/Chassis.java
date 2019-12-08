@@ -39,7 +39,7 @@ public class Chassis {
 
     static public void drive(double y, double x) {
 
-        drive(getCurvedSpeed(y) * speedFactor, getCurvedSpeed(x) * speedFactor);
+        driveRaw(getCurvedSpeed(y) * speedFactor, getCurvedSpeed(x) * speedFactor);
         
     }
 
