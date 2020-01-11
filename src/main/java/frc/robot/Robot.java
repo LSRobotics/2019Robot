@@ -8,6 +8,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -24,14 +25,31 @@ public class Robot extends TimedRobot {
   public static Cargo.Mode cargoMode = Cargo.Mode.IDLE;
 
   public static double gyroAngle;
+  public static double driveSpeed = 1.0;
 
   public static Compressor mCompressor;
 
   public double lightMode;
   public boolean ballCall = false, isLowSpd = false;
 
+  //Drive mode GUI variables and setup
+  public static final String kDefaultDrive = "Default";
+  public static final String kCustomDrive = "Right Stick Drive";
+  public static final String kCustomDrive1 = "Left Stick Drive";
+  public static final String kCustomDrive2 = "Both Stick Drive";
+  public String m_driveSelected;
+  private final SendableChooser<String> m_chooser = new SendableChooser<>();
+
   @Override
   public void robotInit() {
+
+    //Drive mode GUI setup
+    m_chooser.setDefaultOption("Default", kDefaultDrive);
+    m_chooser.addOption("Right Stick Drive", kCustomDrive);
+    m_chooser.addOption("Left Strick Drive", kCustomDrive1);
+    m_chooser.addOption("Both Strick Drive", kCustomDrive2);
+    SmartDashboard.putData("Drive choices", m_chooser);
+    System.out.println("Drive Selected: " + m_driveSelected);
 
     mCompressor = new Compressor(0);
 
@@ -62,6 +80,12 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    m_driveSelected = m_chooser.getSelected();
+  }
+
+  @Override
+  public void teleopInit() {
+    m_driveSelected = m_chooser.getSelected();
   }
 
   @Override
@@ -158,18 +182,25 @@ public class Robot extends TimedRobot {
     gyroAngle = Gyro.getAngle();
   }
 
-  // else contains true tank drive
+  //All code for driving
   public void updateBottom() {
 
-    // Low Speed Mode
-    if (gp1.isKeyToggled(Key.RB)) {
-      isLowSpd = !isLowSpd;
-
-      Chassis.setSpeedFactor(isLowSpd ? 0.5 : 1);
+    //raise drive speed
+    if(gp1.isKeyToggled(Key.RB)) {
+      if(driveSpeed + 0.25 <= 1.0) {
+        driveSpeed += 0.25;
+        Chassis.setSpeedFactor(driveSpeed);
+        SmartDashboard.putNumber("Speed", driveSpeed);
+      }
     }
-
-    //Speed changer
-    //Chassis.updateSpeedLimit(gp1.isKeyToggled(Key.LT,Key.RT, false));
+    //lower drive speed
+    else if(gp1.isKeyToggled(Key.LB)) {
+      if(driveSpeed - 0.25 >= 0) {
+        driveSpeed -= 0.25;
+        Chassis.setSpeedFactor(driveSpeed);
+        SmartDashboard.putNumber("Speed", driveSpeed);
+      }
+    }
 
     // Assistive Autonomous
     if (gp1.isKeyToggled(Key.DPAD_LEFT)) {
@@ -178,13 +209,35 @@ public class Robot extends TimedRobot {
       AutoPilot.turnRobotByTime(false);
     }
 
-    // NFS Drive control
-    else if (gp1.isKeysChanged(Key.J_LEFT_Y, Key.J_RIGHT_X)) {
-      //double y = Utils.mapAnalog(-gp1.getValue(Key.J_LEFT_Y));
-      //double x = Utils.mapAnalog(gp1.getValue(Key.J_RIGHT_X));
-      double y = Utils.mapAnalog(gp1.getValue(Key.J_RIGHT_Y));
-      double x = Utils.mapAnalog(gp1.getValue(Key.J_RIGHT_X));
-      Chassis.drive(x,-y);
+
+    
+    // Drive control 
+    else {
+      double x = 0,y = 0;
+      switch(m_driveSelected){
+        //Right Stick Drive
+        case kCustomDrive:
+           y = Utils.mapAnalog(gp1.getValue(Key.J_RIGHT_Y));
+           x = Utils.mapAnalog(gp1.getValue(Key.J_RIGHT_X));
+          break;
+        //Left Stick Drive
+        case kCustomDrive1:
+           y = Utils.mapAnalog(gp1.getValue(Key.J_LEFT_Y));
+           x = Utils.mapAnalog(gp1.getValue(Key.J_LEFT_X));
+          break;
+        //Both Stick Drive
+        case kCustomDrive2:
+           y = Utils.mapAnalog(gp1.getValue(Key.J_LEFT_Y));
+           x = Utils.mapAnalog(gp1.getValue(Key.J_RIGHT_X));
+          break;
+        //Default is right stick drive
+        case kDefaultDrive:
+          y = Utils.mapAnalog(gp1.getValue(Key.J_RIGHT_Y));
+          x = Utils.mapAnalog(gp1.getValue(Key.J_RIGHT_X));
+          break;
+
+      }
+      Chassis.drive(y,x);
     }
   }
 
@@ -202,25 +255,30 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Navx-MXP Z Velocity", navx[2]);
   }
 
+  //cargo pickup and shooting 
   public void updateCargoMechanism() {
 
     // Force stop
-    if (gp2.isKeyHeld(Key.J_RIGHT_DOWN)) {
+    if (gp1.isKeyHeld(Key.RT)) {
       Cargo.stopCargo();
     }
 
     if (cargoMode != Cargo.Mode.IDLE) {
       Cargo.run();
-    } else if (gp2.isKeyToggled(Key.A)) {
+      //A button for low pickup
+    } else if (gp1.isKeyToggled(Key.A)) {
       cargoMode = Cargo.Mode.LOWPICKUP;
       Cargo.run();
-    } else if (gp2.isKeyToggled(Key.B)) {
+      //B button for high shot
+    } else if (gp1.isKeyToggled(Key.B)) {
       cargoMode = Cargo.Mode.HIGHSHOOT;
       Cargo.run();
-    } else if (gp2.isKeyToggled(Key.X)) {
+      //X button for low shot
+    } else if (gp1.isKeyToggled(Key.X)) {
       cargoMode = Cargo.Mode.LOWSHOOT;
       Cargo.run();
-    } else if (gp2.isKeyToggled(Key.Y)) {
+      //Y button for high pickup
+    } else if (gp1.isKeyToggled(Key.Y)) {
       cargoMode = Cargo.Mode.HIGHPICKUP;
       Cargo.run();
     } else {
