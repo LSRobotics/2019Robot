@@ -168,6 +168,9 @@ public class Robot extends TimedRobot {
       Chassis.setSpeedFactor(isLowSpd ? 0.5 : 1);
     }
 
+    //Speed changer
+    //Chassis.updateSpeedLimit(gp1.isKeyToggled(Key.LT,Key.RT, false));
+
     // Assistive Autonomous
     if (gp1.isKeyToggled(Key.DPAD_LEFT)) {
       AutoPilot.turnRobotByTime(true);
@@ -181,7 +184,7 @@ public class Robot extends TimedRobot {
       //double x = Utils.mapAnalog(gp1.getValue(Key.J_RIGHT_X));
       double y = Utils.mapAnalog(gp1.getValue(Key.J_RIGHT_Y));
       double x = Utils.mapAnalog(gp1.getValue(Key.J_RIGHT_X));
-      Chassis.drive(y+x, y-x);
+      Chassis.drive(x,-y);
     }
   }
 
