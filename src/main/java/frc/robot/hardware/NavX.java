@@ -18,6 +18,9 @@ public class NavX {
 
     public static double getVelocity (Axis axis) {
         
+
+        navx.getAngle();
+
         if(axis == Axis.X) {
             return navx.getVelocityX();
         }

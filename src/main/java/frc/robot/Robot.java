@@ -177,20 +177,22 @@ public class Robot extends TimedRobot {
 
     // NFS Drive control
     else if (gp1.isKeysChanged(Key.J_LEFT_Y, Key.J_RIGHT_X)) {
-      double y = Utils.mapAnalog(-gp1.getValue(Key.J_LEFT_Y));
+      //double y = Utils.mapAnalog(-gp1.getValue(Key.J_LEFT_Y));
+      //double x = Utils.mapAnalog(gp1.getValue(Key.J_RIGHT_X));
+      double y = Utils.mapAnalog(gp1.getValue(Key.J_RIGHT_Y));
       double x = Utils.mapAnalog(gp1.getValue(Key.J_RIGHT_X));
-      Chassis.drive(y, x);
+      Chassis.drive(y+x, y-x);
     }
   }
 
   public void updateSmartDashboard() {
 
-    double [] rio = RoboRIO.getVelocities();
+    double [] rio = RoboRIO.getAccelerations();
     double [] navx = NavX.getVelocities();
 
-    SmartDashboard.putNumber("RoboRIO X Velocity", rio[0]);
-    SmartDashboard.putNumber("RoboRIO Y Velocity", rio[1]);
-    SmartDashboard.putNumber("RoboRIO Z Velocity", rio[2]);
+    SmartDashboard.putNumber("RoboRIO X Acceleration", rio[0]);
+    SmartDashboard.putNumber("RoboRIO Y Acceleration", rio[1]);
+    SmartDashboard.putNumber("RoboRIO Z Acceleration", rio[2]);
 
     SmartDashboard.putNumber("Navx-MXP X Velocity", navx[0]);
     SmartDashboard.putNumber("Navx-MXP Y Velocity", navx[1]);
